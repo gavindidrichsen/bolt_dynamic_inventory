@@ -185,7 +185,7 @@ groups:
 
 <!-- adrlog -->
 
-* [ADR-0001](doc/adr/0001-extract-bolt-task-logic-into-lib-directory-to-simplify-rspect-testing.md) - Extract bolt task logic into 'lib' directory to simplify rspect testing
+* [ADR-0001](doc/adr/0001-extend-this-gem-to-be-a-bolt-inventory-dynamic-plugin-also.md) - Extend this gem to be a bolt inventory dynamic plugin also
 * [ADR-0002](doc/adr/0002-configure-bolt-inventory-with-native-ssh-to-keep-things-simple.md) - Configure bolt inventory with native ssh to keep things simple
 * [ADR-0003](doc/adr/0003-gather-inventory-metadata-via-the-orb-cli-to-keep-things-simple.md) - Gather inventory metadata via the 'orb' cli to keep things simple
 * [ADR-0004](doc/adr/0004-create-dynamic-inventory-groups-based-on-hostname-regex-patterns.md) - Create dynamic inventory groups based on hostname regex patterns
