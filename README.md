@@ -1,46 +1,97 @@
 # OrbstackBoltInventory
 
-A Bolt inventory generator for Orbstack containers.
+A Bolt inventory generator for Orbstack VMs.
 
 ## Description
 
-This `orbstack_bolt_inventory` gem queries Orbstack for VMs and generates a Bolt inventory. It uses native SSH for connecting to the VMs and supports dynamic group creation based on target name patterns. It is modeled after the "Reference" plugins described in the bolt documentation [here](https://www.puppet.com/docs/bolt/latest/writing_plugins.html#reference-plugins).
+This `orbstack_bolt_inventory` gem queries Orbstack and generates a Bolt inventory.  It also contains 2 "skins" or presentations of the output:
 
-## Installation
+* `orby`, a command-line executable, outputs the bolt inventory to stdout.  
+* `orbstack_bolt_inventory`  as a [bolt dynamic inventory plugin](https://www.puppet.com/docs/bolt/latest/writing_plugins.html#reference-plugins).
 
-Add this line to your application's Gemfile:
+## Getting Started
+
+### Using `orbstack_bolt_inventory` as a gem
+
+* add the following to your Gemfile:
 
 ```ruby
 gem 'orbstack_bolt_inventory', git: 'https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory.git', branch: 'main'
 ```
 
-And then execute:
+* generate an `inventory.yaml`
 
 ```bash
-bundle install
-```
-
-## Getting Started
-
-To generate a basic inventory.yaml file for all your Orbstack containers:
-
-```bash
+# either
+bundle exec orby
+# or
 bundle exec orby > inventory.yaml
 ```
 
-This will create an inventory.yaml file in your current directory with all your Orbstack containers. For more information see [Sample outputs](#sample-outputs).
+For more information see [Sample outputs](#sample-outputs).
+
+### Using `orbstack_bolt_inventory` as a bolt dynamic inventory plugin
+
+* add the `orbstack_bolt_inventory` module to your `bolt-project.yaml`, something like:
+
+```yaml
+  # bolt-project.yaml
+  ---
+  name: bigbird
+  modules:
+    - git: https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory.git
+      ref: main
+```
+
+* create a basic `inventory.yaml` at the root of your bolt project:
+
+```yaml
+# inventory.yaml
+version: 2
+_plugin: orbstack_bolt_inventory
+```
+
+* verify your inventory
+
+```bash
+bolt inventory show
+```
 
 ## How-to Guides
 
-### Dynamic Groups
+### How to create dynamic inventory groups
 
-To generate an inventory with specific group patterns, pass in the `-g` flag followed by a comma-separated list of "GROUP:REGEX" definitions.  For example, the following will produce 2 bolt inventory groups `agents` and `compilers` as long as the regex patterns `agent*` and `compiler*` match existing orbstack VMs.
+#### On the command-line
+
+To generate an inventory with specific group patterns, pass in the `-g` flag followed by a comma-separated list of `"GROUP:REGEX"` definitions.  For example, generate an `inventory.yaml` that includes 2 dynamic groups `agents` and `compilers`:
 
 ```bash
 bundle exec orby -g "agents:agent*","compilers:compiler*"
 ```
 
-The generated inventory.yaml can be used with Bolt for targeting specific groups of containers.  For more information see [Sample outputs](#sample-outputs).
+For more information see [Sample outputs](#sample-outputs).
+
+#### Within the `inventory.yaml`
+
+To dynamically create groups based on target name patterns, add a `group_patterns` section to your `inventory.yaml`.  For example, the following will create 2 groups "agents" and "compilers" if VMs exist matching these patterns:
+
+```yaml
+version: 2
+_plugin: orbstack_inventory
+group_patterns:  # Optional: define groups based on target name patterns
+  - group: agents
+    regex: "^agent"
+  - group: compilers
+    regex: "^compiler"
+```
+
+Verify the groups:
+
+```bash
+bolt group show
+bolt command run "hostname" --targets=agents
+bolt command run "hostname" --targets=compilers
+```
 
 ## Explanations
 
@@ -140,7 +191,6 @@ groups:
 * [ADR-0004](doc/adr/0004-create-dynamic-inventory-groups-based-on-hostname-regex-patterns.md) - Create dynamic inventory groups based on hostname regex patterns
 
 <!-- adrlogstop -->
-
 
 ## Contributing
 
