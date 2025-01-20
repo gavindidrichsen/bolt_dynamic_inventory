@@ -1,0 +1,14 @@
+{
+  "name": "orbstack_bolt_inventory",
+  "version": "0.1.0",
+  "description": "A Bolt dynamic inventory plugin for Orbstack VMs",
+  "files": [
+    "lib/orbstack_bolt_inventory.rb",
+    "lib/orbstack_inventory.rb",
+    "lib/orbstack_bolt_inventory/inventory.rb",
+    "lib/orbstack_bolt_inventory/version.rb"
+  ],
+  "tasks": {
+    "resolve_reference": "tasks/resolve_reference.rb"
+  }
+}
