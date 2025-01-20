@@ -2,6 +2,10 @@
 
 A Bolt inventory generator for Orbstack containers.
 
+## Description
+
+This `orbstack_bolt_inventory` gem queries Orbstack for VMs and generates a Bolt inventory. It uses native SSH for connecting to the VMs and supports dynamic group creation based on target name patterns. It is modeled after the "Reference" plugins described in the bolt documentation [here](https://www.puppet.com/docs/bolt/latest/writing_plugins.html#reference-plugins).
+
 ## Installation
 
 Add this line to your application's Gemfile:
