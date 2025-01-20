@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'orbstack_bolt_inventory'
+require 'yaml'
+require 'optparse'
+
+options = { group_patterns: [] }
+
+# Parse command line options
+OptionParser.new do |opts|
+  opts.banner = 'Usage: orby [options]'
+
+  opts.on('-g', '--groups NAME:REGEX,NAME2:REGEX2', Array,
+          'Group patterns (format: groupname:regex, comma-separated)') do |patterns|
+    options[:group_patterns] = patterns.map do |pattern|
+      group, regex = pattern.split(':', 2)
+      { 'group' => group, 'regex' => regex }
+    end
+  end
+end.parse!
+
+# Create an instance of your inventory class with the group patterns
+inventory = OrbstackBoltInventory::Inventory.new({ 'group_patterns' => options[:group_patterns] })
+
+# Generate the inventory
+inventory_data = inventory.generate
+
+# Output as YAML
+puts inventory_data.to_yaml

@@ -1,7 +1,13 @@
+# frozen_string_literal: true
+
 require 'json'
 require 'yaml'
 
+# Module for managing Orbstack Bolt inventory
+# Provides functionality to generate Bolt inventory files from Orbstack VMs
 module OrbstackBoltInventory
+  # Class for generating Bolt inventory from Orbstack VMs
+  # Handles VM discovery and inventory file generation with group pattern support
   class Inventory
     def initialize(config = {})
       @group_patterns = parse_group_patterns(config['group_patterns'])

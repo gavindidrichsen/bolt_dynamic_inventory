@@ -1,0 +1,21 @@
+require:
+  - rubocop-rake
+  - rubocop-rspec
+
+inherit_from: .rubocop_todo.yml
+
+AllCops:
+  TargetRubyVersion: 3.2
+  NewCops: enable
+
+# Customize rules
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - '*.gemspec'
+
+Metrics/MethodLength:
+  Max: 20
+
+Style/Documentation:
+  Enabled: true
