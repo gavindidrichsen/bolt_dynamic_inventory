@@ -1,0 +1,25 @@
+{
+  "name": "gavindidrichsen-orbstack_bolt_inventory",
+  "version": "0.1.0",
+  "author": "gavindidrichsen",
+  "summary": "A Bolt plugin for generating inventory from Orbstack VMs",
+  "license": "Apache-2.0",
+  "source": "https://github.com/gavindidrichsen-puppetlabs/orbstack_inventory",
+  "project_page": "https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory",
+  "issues_url": "https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory/issues",
+  "dependencies": [
+
+  ],
+  "operatingsystem_support": [
+
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 7.24 < 9.0.0"
+    }
+  ],
+  "pdk-version": "3.4.0",
+  "template-url": "https://github.com/puppetlabs/pdk-templates#main",
+  "template-ref": "tags/3.4.0.2-0-gd5f5ac1"
+}
