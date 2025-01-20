@@ -1,7 +1,7 @@
 {
   "description": "Resolve targets for Orbstack inventory",
   "input_method": "stdin",
-  "files": ["orbstack_bolt_inventory/lib/"],
+  "files": ["orbstack_bolt_inventory/lib/orbstack_bolt_inventory/inventory.rb"],
   "parameters": {
     "group_patterns": {
       "type": "Optional[Array[Hash]]",
