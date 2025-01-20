@@ -1,0 +1,5 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+gem 'orbstack_bolt_inventory', path: 'modules/orbstack_bolt_inventory'

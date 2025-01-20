@@ -1,0 +1,9 @@
+  version: 2
+  _plugin: orbstack_bolt_inventory
+  group_patterns:
+  - group: agents
+    regex: "^agent"
+  - group: compilers
+    regex: "^compiler"
+  - group: git
+    regex: "^git"

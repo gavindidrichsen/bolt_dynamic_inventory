@@ -93,6 +93,10 @@ bolt command run "hostname" --targets=agents
 bolt command run "hostname" --targets=compilers
 ```
 
+### How to develop the module and gem
+
+For more information see [how-to-develop-the-module](./doc/how-tos/how-to-develop-the-module/README.md)
+
 ## Explanations
 
 ### Sample outputs
