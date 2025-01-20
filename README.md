@@ -2,124 +2,116 @@
 
 A Bolt inventory generator for Orbstack VMs.
 
-## Description
+## Overview
 
-This `orbstack_bolt_inventory` gem queries Orbstack and generates a Bolt inventory.  It also contains 2 "skins" or presentations of the output:
+This `orbstack_bolt_inventory` gem queries Orbstack and generates a Bolt inventory. It provides two interfaces:
 
-* `orby`, a command-line executable, outputs the bolt inventory to stdout.  
-* `orbstack_bolt_inventory`  as a [bolt dynamic inventory plugin](https://www.puppet.com/docs/bolt/latest/writing_plugins.html#reference-plugins).
+* `orby`: A command-line executable that outputs the bolt inventory to stdout
+* `orbstack_bolt_inventory`: A [bolt dynamic inventory plugin](https://www.puppet.com/docs/bolt/latest/writing_plugins.html#reference-plugins)
 
-## Getting Started
+## Tutorials
 
-### Using `orbstack_bolt_inventory` as a gem
+The following assume you have already created some orbstack VMs.
 
-* add the following to your Gemfile:
+### Setup command-line
 
-```ruby
-gem 'orbstack_bolt_inventory', git: 'https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory.git', branch: 'main'
-```
+1. Install the gem by adding to your Gemfile:
 
-* generate an `inventory.yaml`
+   ```ruby
+   gem 'orbstack_bolt_inventory', git: 'https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory.git', branch: 'main'
+   ```
 
-```bash
-# either
-bundle exec orby
-# or
-bundle exec orby > inventory.yaml
-```
+2. Generate your first inventory:
 
-For more information see [Sample outputs](#sample-outputs).
+   ```bash
+   bundle exec orby > inventory.yaml
+   ```
 
-### Using `orbstack_bolt_inventory` as a bolt dynamic inventory plugin
+3. Verify the inventory works:
 
-* add the `orbstack_bolt_inventory` module to your `bolt-project.yaml`, something like:
+   ```bash
+   bolt inventory show
+   ```
 
-```yaml
-  # bolt-project.yaml
-  ---
-  name: bigbird
-  modules:
-    - git: https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory.git
-      ref: main
-```
+### Set up Bolt Dynamic Inventory Plugin
 
-* create a basic `inventory.yaml` at the root of your bolt project:
+1. Add to your `bolt-project.yaml`:
 
-```yaml
-# inventory.yaml
-version: 2
-_plugin: orbstack_bolt_inventory
-```
+   ```yaml
+   name: bigbird
+   modules:
+     - git: https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory.git
+       ref: main
+   ```
 
-* verify your inventory
+2. Install the module with `bolt module install`
 
-```bash
-bolt inventory show
-```
+3. Create basic `inventory.yaml`:
 
-## How-to Guides
+   ```yaml
+   version: 2
+   _plugin: orbstack_bolt_inventory
+   ```
 
-### How to create dynamic inventory groups
+4. Verify the inventory works:
 
-#### On the command-line
+   ```bash
+   bolt inventory show
+   ```
 
-To generate an inventory with specific group patterns, pass in the `-g` flag followed by a comma-separated list of `"GROUP:REGEX"` definitions.  For example, generate an `inventory.yaml` that includes 2 dynamic groups `agents` and `compilers`:
+## How-To Guides
+
+### Create Dynamic Inventory Groups via Command Line
+
+To generate an inventory with specific group patterns:
 
 ```bash
 bundle exec orby -g "agents:agent*","compilers:compiler*"
 ```
 
-For more information see [Sample outputs](#sample-outputs).
+### Create Dynamic Inventory Groups in inventory.yaml
 
-#### Within the `inventory.yaml`
+1. Create an `inventory.yaml` with group patterns:
 
-To dynamically create groups based on target name patterns, add a `group_patterns` section to your `inventory.yaml`.  For example, the following will create 2 groups "agents" and "compilers" if VMs exist matching these patterns:
+   ```yaml
+   version: 2
+   _plugin: orbstack_inventory
+   group_patterns:
+     - group: agents
+       regex: "^agent"
+     - group: compilers
+       regex: "^compiler"
+   ```
+
+2. Verify the groups:
+
+   ```bash
+   bolt group show
+   bolt command run "hostname" --targets=agents
+   bolt command run "hostname" --targets=compilers
+   ```
+
+### Development Guide
+
+For development instructions, see [how-to-develop-the-module](./doc/how-tos/how-to-develop-the-module/README.md)
+
+## Reference
+
+### Configuration Options
+
+The default configuration uses:
+
+* Transport: SSH
+* Native SSH: enabled
+* Login Shell: bash
+* TTY: false
+* Host Key Check: disabled
+* Run As: root
+* Default Port: 32222
+
+### Sample Output Format
 
 ```yaml
-version: 2
-_plugin: orbstack_inventory
-group_patterns:  # Optional: define groups based on target name patterns
-  - group: agents
-    regex: "^agent"
-  - group: compilers
-    regex: "^compiler"
-```
-
-Verify the groups:
-
-```bash
-bolt group show
-bolt command run "hostname" --targets=agents
-bolt command run "hostname" --targets=compilers
-```
-
-### How to develop the module and gem
-
-For more information see [how-to-develop-the-module](./doc/how-tos/how-to-develop-the-module/README.md)
-
-## Explanations
-
-### Sample outputs
-
-Given the following orbstack VMs:
-
-```bash
-➜  tester git:(development) orb list
-NAME        STATE    DISTRO  VERSION  ARCH
-----        -----    ------  -------  ----
-agent01     running  ubuntu  jammy    amd64
-agent02     running  ubuntu  jammy    amd64
-agent99     running  ubuntu  jammy    amd64
-compiler01  running  ubuntu  jammy    amd64
-compiler02  running  ubuntu  jammy    amd64
-➜  tester git:(development) 
-```
-
-Then a basic bolt `inventory.yaml` can be created as follows:
-
-```bash
-➜  tester git:(development) bundle exec orby
----
 config:
   transport: ssh
   ssh:
@@ -134,76 +126,31 @@ config:
 targets:
 - name: agent01
   uri: agent01@orb
-- name: agent02
-  uri: agent02@orb
-- name: agent99
-  uri: agent99@orb
-- name: compiler01
-  uri: compiler01@orb
-- name: compiler02
-  uri: compiler02@orb
-➜  tester git:(development) 
-```
-
-Further, an inventory with dynamic inventory groups can be created as follows:
-
-```bash
-➜  tester git:(development) bundle exec orby -g "agents:agent*","compilers:compiler*"
----
-config:
-  transport: ssh
-  ssh:
-    native-ssh: true
-    load-config: true
-    login-shell: bash
-    tty: false
-    host-key-check: false
-    run-as: root
-    user: root
-    port: 32222
-targets:
-- name: agent01
-  uri: agent01@orb
-- name: agent02
-  uri: agent02@orb
-- name: agent99
-  uri: agent99@orb
-- name: compiler01
-  uri: compiler01@orb
-- name: compiler02
-  uri: compiler02@orb
 groups:
 - name: agents
   targets:
   - agent01
-  - agent02
-  - agent99
-- name: compilers
-  targets:
-  - compiler01
-  - compiler02
-➜  tester git:(development)
 ```
 
-### Design Decisions
+## Explanation
+
+### Architecture and Design Decisions
+
+The project's architecture is documented through Architecture Decision Records (ADRs):
 
 <!-- adrlog -->
-
 * [ADR-0001](doc/adr/0001-extend-this-gem-to-be-a-bolt-inventory-dynamic-plugin-also.md) - Extend this gem to be a bolt inventory dynamic plugin also
 * [ADR-0002](doc/adr/0002-configure-bolt-inventory-with-native-ssh-to-keep-things-simple.md) - Configure bolt inventory with native ssh to keep things simple
 * [ADR-0003](doc/adr/0003-gather-inventory-metadata-via-the-orb-cli-to-keep-things-simple.md) - Gather inventory metadata via the 'orb' cli to keep things simple
 * [ADR-0004](doc/adr/0004-create-dynamic-inventory-groups-based-on-hostname-regex-patterns.md) - Create dynamic inventory groups based on hostname regex patterns
-
 <!-- adrlogstop -->
+
+### Key Concepts
+
+* **Dynamic Groups**: Groups are created based on regex patterns matching target names
+* **Native SSH**: Used for simplicity and compatibility with standard SSH configurations
+* **Dual Interface**: Provides both CLI tool (`orby`) and Bolt plugin interface for flexibility
 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at <https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory>. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
-
-## License
-
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the OrbstackBoltInventory project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory/blob/master/CODE_OF_CONDUCT.md).
