@@ -11,7 +11,7 @@ options = { group_patterns: [] }
 OptionParser.new do |opts|
   opts.banner = 'Usage: orby [options]'
 
-  opts.on('-g', '--groups NAME:REGEX,NAME2:REGEX2', Array,
+  opts.on('-g', '--groups "NAME:REGEX,NAME2:REGEX2"', Array,
           'Group patterns (format: groupname:regex, comma-separated)') do |patterns|
     options[:group_patterns] = patterns.map do |pattern|
       group, regex = pattern.split(':', 2)
