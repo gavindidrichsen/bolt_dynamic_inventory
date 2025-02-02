@@ -3,3 +3,4 @@ name: usage
 modules:
   - git: https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory.git
     ref: main
+  - puppetlabs-motd
