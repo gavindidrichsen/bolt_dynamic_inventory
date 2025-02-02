@@ -8,7 +8,7 @@ The following shows how to use the [orbstack_bolt_inventory](https://github.com/
 
 First, refer to the [Environment Setup Guide](setup_environment.md) and then accordingly configure [direnv](https://direnv.net), [rbenv](https://github.com/rbenv/rbenv), ruby, and [orbstack](https://docs.orbstack.dev).
 
-Then, isolate your ruby environment so that you don't accidentally corrupt your system.  One way to do this is to set the `BUNDLE_*`, `GEM_*`, and `GEMRC` environment variables as below; this keeps all gem installation local to the current working directory.
+Second, isolate your ruby environment so that you don't accidentally corrupt your system.  One way to do this is to set the `BUNDLE_*`, `GEM_*`, and `GEMRC` environment variables as below; this keeps all gem installation local to the current working directory.
 
 ```bash
 # isolate the ruby environment by setting the following environment variables for bundle and gem installations
@@ -36,9 +36,7 @@ direnv allow
 echo "${BUNDLE_GEMFILE}"
 ```
 
-## Scenario 1: Basic Use
-
-Output to stdout the bolt inventory for all orbstack VMs:
+Finally, setup your `Gemfile` to pull in the `orbstack_bolt_inventory` plugin:
 
 ```bash
 # ensure current environment is clean
@@ -55,7 +53,13 @@ EOL
 # install the gem and verify
 bundle install
 bundle info orbstack_bolt_inventory
+```
 
+## Scenario 1: Basic Use
+
+Output to stdout the bolt inventory for all orbstack VMs.
+
+```bash
 # use the gem executable to output to stout a working orbstack inventory
 bundle exec orby
 ```
