@@ -1,5 +1,0 @@
-{
-  "projects": {
-    "modules/orbstack_bolt_inventory": "https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory.git"
-  }
-}

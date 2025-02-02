@@ -93,7 +93,7 @@ bundle exec orby -g "agents:agent*","compilers:compiler*"
 
 ### Development Guide
 
-For development instructions, see [how-to-develop-the-module](./doc/how-tos/how-to-develop-the-module/README.md)
+For development instructions, see [how-to-develop-the-module](./docs/how-tos/how-to-develop-the-module/README.md)
 
 ## Reference
 
@@ -139,10 +139,12 @@ groups:
 The project's architecture is documented through Architecture Decision Records (ADRs):
 
 <!-- adrlog -->
-* [ADR-0001](doc/adr/0001-extend-this-gem-to-be-a-bolt-inventory-dynamic-plugin-also.md) - Extend this gem to be a bolt inventory dynamic plugin also
-* [ADR-0002](doc/adr/0002-configure-bolt-inventory-with-native-ssh-to-keep-things-simple.md) - Configure bolt inventory with native ssh to keep things simple
-* [ADR-0003](doc/adr/0003-gather-inventory-metadata-via-the-orb-cli-to-keep-things-simple.md) - Gather inventory metadata via the 'orb' cli to keep things simple
-* [ADR-0004](doc/adr/0004-create-dynamic-inventory-groups-based-on-hostname-regex-patterns.md) - Create dynamic inventory groups based on hostname regex patterns
+
+* [ADR-0001](docs/adr/0001-extend-this-gem-to-be-a-bolt-inventory-dynamic-plugin-also.md) - Extend this gem to be a bolt inventory dynamic plugin also
+* [ADR-0002](docs/adr/0002-configure-bolt-inventory-with-native-ssh-to-keep-things-simple.md) - Configure bolt inventory with native ssh to keep things simple
+* [ADR-0003](docs/adr/0003-gather-inventory-metadata-via-the-orb-cli-to-keep-things-simple.md) - Gather inventory metadata via the 'orb' cli to keep things simple
+* [ADR-0004](docs/adr/0004-create-dynamic-inventory-groups-based-on-hostname-regex-patterns.md) - Create dynamic inventory groups based on hostname regex patterns
+
 <!-- adrlogstop -->
 
 ### Key Concepts
