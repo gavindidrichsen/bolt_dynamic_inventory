@@ -5,7 +5,7 @@ plan usage::sayhello (
 ) {
   apply_prep($targets)
   apply($targets) {
-    # notify { "Hello from usage::sayhello: [${facts['role']}]": }
+    notify { "Hello from usage::sayhello: [${facts['role']}]": }
     file { '/tmp/hello':
       ensure  => file,
       content => "Hello from usage::sayhello: [${facts['role']}]",
