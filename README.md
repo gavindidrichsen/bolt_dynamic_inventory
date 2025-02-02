@@ -144,6 +144,7 @@ The project's architecture is documented through Architecture Decision Records (
 * [ADR-0002](docs/adr/0002-configure-bolt-inventory-with-native-ssh-to-keep-things-simple.md) - Configure bolt inventory with native ssh to keep things simple
 * [ADR-0003](docs/adr/0003-gather-inventory-metadata-via-the-orb-cli-to-keep-things-simple.md) - Gather inventory metadata via the 'orb' cli to keep things simple
 * [ADR-0004](docs/adr/0004-create-dynamic-inventory-groups-based-on-hostname-regex-patterns.md) - Create dynamic inventory groups based on hostname regex patterns
+* [ADR-0005](docs/adr/0005-create-group-role-fact-for-each-group-and-equal-to-the-group-name.md) - Create group 'role' fact for each group and equal to the group name
 
 <!-- adrlogstop -->
 
