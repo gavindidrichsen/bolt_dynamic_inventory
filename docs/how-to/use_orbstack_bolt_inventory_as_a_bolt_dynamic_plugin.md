@@ -8,7 +8,7 @@ The following shows how to use the [orbstack_bolt_inventory](https://github.com/
 
 First, refer to the [Environment Setup Guide](setup_environment.md) and then accordingly configure [direnv](https://direnv.net) and [orbstack](https://docs.orbstack.dev).
 
-Then **(1)** set `BOLT_GEM` to suppress a bolt gem installation warning; and **(2)** include the `orbstack_bolt_inventory` module in your `bolt-project.yaml`:
+Second, set `BOLT_GEM` to suppress a bolt gem installation warning:
 
 ```bash
 # suppress bolt gem installation warning  
@@ -19,7 +19,11 @@ EOL
 # 'allow' the environmental variables to be set and verify
 direnv allow
 echo "${BOLT_GEM}"
+```
 
+Finally, include the `orbstack_bolt_inventory` module in your `bolt-project.yaml` and install it:
+
+```bash
 # create a bolt-project.yaml that loads the 'orbstack_bolt_inventory' as a bolt plugin
 cat << 'EOL' > bolt-project.yaml
 ---
