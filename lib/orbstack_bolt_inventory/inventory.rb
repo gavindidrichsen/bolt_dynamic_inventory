@@ -82,6 +82,7 @@ module OrbstackBoltInventory
 
         groups << {
           'name' => pattern[:group],
+          'facts' => { 'role' => pattern[:group]},
           'targets' => matching_targets
         }
       end
