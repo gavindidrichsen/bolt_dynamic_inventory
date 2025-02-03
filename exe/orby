@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 require 'orbstack_bolt_inventory'
-require 'yaml'
+require 'psych'  # Using Psych directly for better YAML formatting control
 require 'optparse'
 
 options = { group_patterns: [] }
@@ -26,5 +26,10 @@ inventory = OrbstackBoltInventory::Inventory.new({ 'group_patterns' => options[:
 # Generate the inventory
 inventory_data = inventory.generate
 
-# Output as YAML
-puts inventory_data.to_yaml
+# Output as YAML using Psych for proper formatting
+# See ADR-0006 for why we use Psych instead of YAML
+Psych.dump(inventory_data, 
+          indentation: 2,          # Use 2-space indentation
+          line_width: -1,          # Prevent line wrapping
+          block_style: true,       # Use block style for arrays (YAML 1.2 compliant)
+          out: $stdout)
