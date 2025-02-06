@@ -6,20 +6,7 @@ The following shows how to use the [orbstack_bolt_inventory](https://github.com/
 
 ## Pre-requisites
 
-First, refer to the [Environment Setup Guide](setup_environment.md) and then accordingly configure [direnv](https://direnv.net) and [orbstack](https://docs.orbstack.dev).
-
-Second, set `BOLT_GEM` to suppress a bolt gem installation warning:
-
-```bash
-# suppress bolt gem installation warning  
-cat << 'EOL' > .envrc
-export BOLT_GEM=true
-EOL
-
-# 'allow' the environmental variables to be set and verify
-direnv allow
-echo "${BOLT_GEM}"
-```
+First, refer to the [Environment Setup Guide](setup_environment.md) and then accordingly configure [orbstack](https://docs.orbstack.dev).
 
 Finally, include the `orbstack_bolt_inventory` module in your `bolt-project.yaml` and install it:
 
@@ -34,7 +21,7 @@ modules:
 EOL
 
 # install the new module
-bundle exec bolt module install
+bolt module install
 ```
 
 ## Scenario 1: Basic Use
@@ -42,9 +29,6 @@ bundle exec bolt module install
 Configure bolt to dynamically show all orbstack VMs:
 
 ```bash
-# clean-up any existing setup
-rm -f inventory.yaml
-
 # create a basic bolt inventory file that loads the plugin
 cat << 'EOL' > inventory.yaml
 version: 2
@@ -52,7 +36,7 @@ _plugin: orbstack_bolt_inventory
 EOL
 
 # output the inventory of orbstack VMs
-bundle exec bolt inventory show --targets=all
+bolt inventory show --targets=all
 ```
 
 See sample output in [Scenario 1 Output](#scenario-1-output).
@@ -62,9 +46,6 @@ See sample output in [Scenario 1 Output](#scenario-1-output).
 Configure bolt to dynamically configure bolt inventory groups based on regex patterns:
 
 ```bash
-# clean-up any existing setup
-rm -f inventory.yaml
-
 # update your bolt inventory to contain group/regex configuration, e.g.,
 cat << 'EOL' > inventory.yaml
 version: 2
@@ -77,8 +58,8 @@ group_patterns:
 EOL
 
 # show the machines in particular groups
-bundle exec bolt inventory show --targets=agent
-bundle exec bolt inventory show --targets=compiler
+bolt inventory show --targets=agent
+bolt inventory show --targets=compiler
 ```
 
 See sample output in [Scenario 2 Output](#scenario-2-output).
@@ -118,7 +99,7 @@ Additional information
 The output above should contain the following group listing:
 
 ```bash
-➜  developing_the_plugin git:(development) ✗ bundle exec bolt inventory show --targets=agent
+➜  developing_the_plugin git:(development) ✗ bolt inventory show --targets=agent
 Targets
   agent01
   agent02
@@ -130,7 +111,7 @@ Target count
 
 Additional information
   Use the '--detail' option to view target configuration and data
-➜  developing_the_plugin git:(development) ✗ bundle exec bolt inventory show --targets=compiler
+➜  developing_the_plugin git:(development) ✗ bolt inventory show --targets=compiler
 Targets
   compiler01
   compiler02

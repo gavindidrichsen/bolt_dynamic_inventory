@@ -37,3 +37,7 @@ echo "${HELLO}"
 
 * Install [rbenv](https://github.com/rbenv/rbenv), and
 * Install a ruby version, e.g.,`rbenv install 3.2.5`
+
+### Install the latest bolt and pdk
+
+See installation guides for [bolt]() and for [pdk]().

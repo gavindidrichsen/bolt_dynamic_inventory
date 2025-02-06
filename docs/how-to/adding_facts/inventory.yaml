@@ -1,7 +1,0 @@
-version: 2
-_plugin: orbstack_bolt_inventory
-group_patterns:
-- group: agent
-  regex: "^agent"
-- group: compiler
-  regex: "^compiler"
