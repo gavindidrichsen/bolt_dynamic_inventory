@@ -1,4 +1,4 @@
-# Create and Remove Orbstack VMs from the command-line
+# How to create and remove orbstack VMs from the command-line
 
 ## Description
 

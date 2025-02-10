@@ -1,4 +1,4 @@
-# How to use the orbstack_bolt_inventory as a bolt dynamic plugin
+# How to use the `role` fact
 
 ## Description
 
@@ -53,7 +53,7 @@ groups:
 
 ## Pre-requisites
 
-First, refer to the [Environment Setup Guide](setup_environment.md) and then accordingly configure [direnv](https://direnv.net) and [orbstack](https://docs.orbstack.dev), and ensure `bolt` is installed on your system e.g., `/opt/puppetlabs/bolt`.
+First, refer to the [Environment Setup Guide](how_to_setup_environment.md) and then accordingly configure [direnv](https://direnv.net) and [orbstack](https://docs.orbstack.dev). Also, ensure `bolt` is installed on your system e.g., `/opt/puppetlabs/bolt`.
 
 Finally, include the following modules in your `bolt-project.yaml`:
 
@@ -143,7 +143,7 @@ See sample output in [Scenario 2 Output](#scenario-2-output).
 
 ## Clean up
 
-Remove the orbstack VMs either manually or via command-line.  For more information see [Create and Remove Orbstack VMs from the command-line](create_and_remove_orbstack_vms_from_cli.md).
+Remove the orbstack VMs either manually or via command-line.  For more information see [Create and Remove Orbstack VMs from the command-line](how_to_create_and_remove_orbstack_vms_from_cli.md).
 
 ## Appendix
 
@@ -160,7 +160,7 @@ Targets
   compiler02
 
 Inventory source
-  /Users/gavin.didrichsen/@REFERENCES/github/app/development/tools/puppet/@products/bolt/inventories/orbstack_inventory_USAGE/docs/how-to/develop-the-bolt-dynamic-plugin/inventory.yaml
+  /Users/gavin.didrichsen/@REFERENCES/github/app/development/tools/puppet/@products/bolt/inventories/orbstack_inventory_USAGE/docs/develop-the-bolt-dynamic-plugin/inventory.yaml
 
 Target count
   5 total, 5 from inventory, 0 adhoc
