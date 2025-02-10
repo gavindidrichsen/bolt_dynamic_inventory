@@ -2,11 +2,13 @@
 
 ## Description
 
-The following shows how to use the [orbstack_bolt_inventory](https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory) as a bolt dynamic inventory plugin.
+The following shows how to use the [orbstack_bolt_inventory](https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory) as a [bolt dynamic inventory plugin](https://www.puppet.com/docs/bolt/latest/writing_plugins.html#reference-plugins).
+
+For more information see [How to create a basic dynamic inventory plugin](./how_to_create_a_basic_bolt_inventory_plugin.md).
 
 ## Pre-requisites
 
-First, refer to the [Environment Setup Guide](setup_environment.md) and then accordingly configure [orbstack](https://docs.orbstack.dev).
+First, refer to the [Environment Setup Guide](how_to_setup_environment.md) and then accordingly configure [orbstack](https://docs.orbstack.dev).
 
 Finally, include the `orbstack_bolt_inventory` module in your `bolt-project.yaml` and install it:
 
@@ -24,9 +26,9 @@ EOL
 bolt module install
 ```
 
-## Scenario 1: Basic Use
+## Usage
 
-Configure bolt to dynamically show all orbstack VMs:
+The following will dynamically show all orbstack VMs:
 
 ```bash
 # create a basic bolt inventory file that loads the plugin
@@ -39,11 +41,7 @@ EOL
 bolt inventory show --targets=all
 ```
 
-See sample output in [Scenario 1 Output](#scenario-1-output).
-
-## Scenario 2: Configuring Regex Groups
-
-Configure bolt to dynamically configure bolt inventory groups based on regex patterns:
+By adding a `group_patterns` section, then the bolt inventory will also include dynamic groups based on a regex pattern:
 
 ```bash
 # update your bolt inventory to contain group/regex configuration, e.g.,
@@ -62,19 +60,16 @@ bolt inventory show --targets=agent
 bolt inventory show --targets=compiler
 ```
 
-See sample output in [Scenario 2 Output](#scenario-2-output).
-
-## Clean up
-
-Remove the orbstack VMs either manually or via command-line.  For more information see [Create and Remove Orbstack VMs from the command-line](create_and_remove_orbstack_vms_from_cli.md).
+See the appendix for sample output.
 
 ## Appendix
 
-### Scenario 1 Output
+### Sample Output
+
+* `bundle exec bolt inventory show --targets=all`:
 
 ```bash
-# verify the plugin
-➜  develop-the-bolt-dynamic-plugin git:(development) ✗ bundle exec bolt inventory show
+➜  develop-the-bolt-dynamic-plugin git:(development) ✗ bundle exec bolt inventory show --targets=all
 Targets
   agent01
   agent02
@@ -83,7 +78,7 @@ Targets
   compiler02
 
 Inventory source
-  /Users/gavin.didrichsen/@REFERENCES/github/app/development/tools/puppet/@products/bolt/inventories/orbstack_inventory_USAGE/docs/how-to/develop-the-bolt-dynamic-plugin/inventory.yaml
+  /Users/gavin.didrichsen/@REFERENCES/github/app/development/tools/puppet/@products/bolt/inventories/orbstack_inventory_USAGE/docs/develop-the-bolt-dynamic-plugin/inventory.yaml
 
 Target count
   5 total, 5 from inventory, 0 adhoc
@@ -94,11 +89,10 @@ Additional information
 ➜  develop-the-bolt-dynamic-plugin git:(development) ✗ 
 ```
 
-### Scenario 2 Output
-
-The output above should contain the following group listing:
+* `bolt inventory show --targets=agent` and `bolt inventory show --targets=compiler`:
 
 ```bash
+# showing the dynamic groups
 ➜  developing_the_plugin git:(development) ✗ bolt inventory show --targets=agent
 Targets
   agent01

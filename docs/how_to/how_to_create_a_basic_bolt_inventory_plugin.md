@@ -1,16 +1,22 @@
-# How to setup a basic dynamic inventory plugin
+# How to create a basic dynamic inventory plugin
 
 ## Description
 
-The following shows how to create a bare-bones bolt inventory plugin.  The inventory is hardcoded in this example but could just as easily proxy out to something else to generate the required inventory.
+The following shows how to create a bare-bones bolt inventory plugin with only 5 files:
+
+* `bolt-project.yaml​`
+* `inventory.yaml​`
+* `modules/basic_plugin/bolt-plugin.json​`
+* `modules/basic_plugin/tasks/resolve_reference.json​`
+* `modules/basic_plugin/tasks/resolve_reference.rb`
 
 ## Pre-requisites
 
-First, refer to the [Environment Setup Guide](setup_environment.md) and then accordingly configure [orbstack](https://docs.orbstack.dev).
+First, refer to the [Environment Setup Guide](how_to_setup_environment.md) and then accordingly configure [orbstack](https://docs.orbstack.dev).
 
-## Basic Use
+## Usage
 
-Initialize a new bolt project:
+Create `bolt-project.yaml​` to initialize a new bolt project:
 
 ```bash
 # create a new directory
@@ -28,7 +34,7 @@ EOL
 bolt command run "hostname" --targets=localhost
 ```
 
-Create an inventory file pointing to your (non-existant) `basic_plugin`:
+Create `inventory.yaml​` pointing to your (non-existant) `basic_plugin`:
 
 ```bash
 # create an inventory.yaml referencing the "basic_plugin"
@@ -41,7 +47,7 @@ EOL
 bolt inventory show
 ```
 
-Create the `bolt_plugin.json` metadata file:
+Create the `modules/basic_plugin/bolt-plugin.json​` metadata file:
 
 ```bash
 # create the 'basic_plugin' module directory
@@ -60,10 +66,10 @@ cat << 'EOL' > modules/basic_plugin/bolt_plugin.json
 EOL
 ```
 
-Create the `resolve_reference` task required by the plugin.  In other words, 
+Create the `resolve_reference` task required by the plugin.  In other words,
 
-* create `resolve_reference.json`, which is the task metadata.
-* create `resolve_reference.rb` hardcoding valid yaml inventory content. 
+* create the `modules/basic_plugin/tasks/resolve_reference.json​` task metadata.
+* create the `modules/basic_plugin/tasks/resolve_reference.rb` with hardcoded bolt inventory yaml for simplicity.
 
 ```bash
 # create the 'resolve_reference' task
