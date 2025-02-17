@@ -8,9 +8,9 @@ The following shows how to use the [bolt_dynamic_inventory](https://github.com/g
 
 Refer to the [Environment Setup Guide](how_to_setup_environment.md) and then configure [direnv](https://direnv.net), [rbenv](https://github.com/rbenv/rbenv), ruby, [orbstack](https://docs.orbstack.dev), and [vmpooler](https://github.com/puppetlabs/vmpooler/tree/main).
 
-## Configure the Gemfile
+## Usage
 
-Setup your `Gemfile` to pull in the `bolt_dynamic_inventory` gem:
+First, setup your `Gemfile` to pull in the `bolt_dynamic_inventory` gem:
 
 ```bash
 # ensure current environment is clean
@@ -27,14 +27,16 @@ EOL
 bundle install
 ```
 
+Then generate an inventory according to the following sections.
+
 ### Generate orbstack inventory
 
 ```bash
 # List all Orbstack VMs
-bundle exec binv
+bundle exec binv --provider=orbstack
 
 # Create groups based on regex patterns
-bundle exec binv --groups "agent:^agent,compiler:^compiler"
+bundle exec binv --provider=orbstack --groups "agent:^agent,compiler:^compiler"
 ```
 
 ### Generate vmpooler inventory
@@ -54,7 +56,7 @@ bundle exec binv --provider=vmpooler --groups "agent:tender|normal"
 Orbstack output:
 
 ```bash
-➜  develop-the-bolt-dynamic-plugin git:(development) ✗ bundle exec binv
+➜  develop-the-bolt-dynamic-plugin git:(development) ✗ bundle exec binv --provider=orbstack 
 ---
 config:
   transport: ssh
@@ -84,7 +86,7 @@ targets:
 * `bundle exec binv --groups "agent:agen*,compiler:comp*"`
 
 ```bash
-➜  dump git:(development) ✗ bundle exec binv --groups "agent:agen*,compiler:comp*"
+➜  dump git:(development) ✗ bundle exec binv --provider=orbstack --groups "agent:agen*,compiler:comp*"
 ---
 config:
   transport: ssh
