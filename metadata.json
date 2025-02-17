@@ -1,12 +1,12 @@
 {
-  "name": "gavindidrichsen-orbstack_bolt_inventory",
+  "name": "gavindidrichsen-bolt_dynamic_inventory",
   "version": "0.1.0",
   "author": "gavindidrichsen",
   "summary": "A Bolt plugin for generating inventory from Orbstack VMs",
   "license": "Apache-2.0",
   "source": "https://github.com/gavindidrichsen-puppetlabs/orbstack_inventory",
-  "project_page": "https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory",
-  "issues_url": "https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory/issues",
+  "project_page": "https://github.com/gavindidrichsen-puppetlabs/bolt_dynamic_inventory",
+  "issues_url": "https://github.com/gavindidrichsen-puppetlabs/bolt_dynamic_inventory/issues",
   "dependencies": [
 
   ],

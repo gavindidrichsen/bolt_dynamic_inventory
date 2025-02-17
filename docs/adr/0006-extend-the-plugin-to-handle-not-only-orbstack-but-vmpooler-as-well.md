@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-The orbstack_bolt_inventory plugin was initially designed to work exclusively with Orbstack VMs. However, there was a need to support VMPooler VMs as well, since both types of VMs are commonly used in development and testing environments. Supporting both providers in a single plugin would provide a consistent interface and reduce code duplication.
+The bolt_dynamic_inventory plugin was initially designed to work exclusively with Orbstack VMs. However, there was a need to support VMPooler VMs as well, since both types of VMs are commonly used in development and testing environments. Supporting both providers in a single plugin would provide a consistent interface and reduce code duplication.
 
 ## Decision
 

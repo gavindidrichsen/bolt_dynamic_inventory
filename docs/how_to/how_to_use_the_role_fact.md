@@ -2,7 +2,7 @@
 
 ## Description
 
-The following shows how to use the `role` fact which is a feature of the [orbstack_bolt_inventory](https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory) plugin.
+The following shows how to use the `role` fact which is a feature of the [bolt_dynamic_inventory](https://github.com/gavindidrichsen-puppetlabs/bolt_dynamic_inventory) plugin.
 
 The following is an example `inventory.yaml` with 2 groups of targets `agent` and `compiler`.  Notice:
 
@@ -57,16 +57,16 @@ First, refer to the [Environment Setup Guide](how_to_setup_environment.md) and t
 
 Finally, include the following modules in your `bolt-project.yaml`:
 
-* `orbstack_bolt_inventory`
+* `bolt_dynamic_inventory`
 * `puppetlabs-motd`, which configures the message for today
 
 ```bash
-# create a bolt-project.yaml that loads the 'orbstack_bolt_inventory' as a bolt plugin
+# create a bolt-project.yaml that loads the 'bolt_dynamic_inventory' as a bolt plugin
 cat << 'EOL' > bolt-project.yaml
 ---
 name: usage
 modules:
-  - git: https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory.git
+  - git: https://github.com/gavindidrichsen-puppetlabs/bolt_dynamic_inventory.git
     ref: main
   - puppetlabs-motd
 EOL
@@ -78,7 +78,7 @@ EOL
 # agent01 will have a $facts.role = 'agent'
 cat << 'EOL' > inventory .yaml
 version: 2
-_plugin: orbstack_bolt_inventory
+_plugin: bolt_dynamic_inventory
 group_patterns:
 - group: agent
   regex: "^agent"
@@ -126,7 +126,7 @@ rm -f inventory.yaml
 # update your bolt inventory to contain group/regex configuration, e.g.,
 cat << 'EOL' > inventory.yaml
 version: 2
-_plugin: orbstack_bolt_inventory
+_plugin: bolt_dynamic_inventory
 group_patterns:
 - group: agent
   regex: "^agent"

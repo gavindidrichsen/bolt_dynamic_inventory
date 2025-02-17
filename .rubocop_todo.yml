@@ -12,7 +12,7 @@
 # Include: **/*.gemspec, **/Gemfile, **/gems.rb
 Gemspec/DevelopmentDependencies:
   Exclude:
-    - 'orbstack_bolt_inventory.gemspec'
+    - 'bolt_dynamic_inventory.gemspec'
 
 # Offense count: 1
 # Configuration parameters: AllowedMethods, AllowedPatterns, CountRepeatedAttributes.
@@ -37,14 +37,14 @@ Metrics/MethodLength:
 # Offense count: 2
 RSpec/AnyInstance:
   Exclude:
-    - 'spec/orbstack_bolt_inventory_spec.rb'
+    - 'spec/bolt_dynamic_inventory_spec.rb'
 
 # Offense count: 2
 # Configuration parameters: Prefixes, AllowedPatterns.
 # Prefixes: when, with, without
 RSpec/ContextWording:
   Exclude:
-    - 'spec/orbstack_bolt_inventory_spec.rb'
+    - 'spec/bolt_dynamic_inventory_spec.rb'
 
 # Offense count: 5
 # Configuration parameters: CountAsOne.
@@ -57,4 +57,4 @@ Style/Documentation:
   Exclude:
     - 'spec/**/*'
     - 'test/**/*'
-    - 'lib/orbstack_bolt_inventory.rb'
+    - 'lib/bolt_dynamic_inventory.rb'

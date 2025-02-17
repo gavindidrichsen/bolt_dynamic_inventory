@@ -2,8 +2,8 @@
   "description": "Resolve targets for Orbstack inventory",
   "input_method": "stdin",
   "files": [
-    "orbstack_bolt_inventory/lib/orbstack_bolt_inventory/provider/orbstack/inventory.rb",
-    "orbstack_bolt_inventory/lib/orbstack_bolt_inventory/provider/vmpooler/inventory.rb"
+    "bolt_dynamic_inventory/lib/bolt_dynamic_inventory/provider/orbstack/inventory.rb",
+    "bolt_dynamic_inventory/lib/bolt_dynamic_inventory/provider/vmpooler/inventory.rb"
   ],
   "parameters": {
     "provider": {
