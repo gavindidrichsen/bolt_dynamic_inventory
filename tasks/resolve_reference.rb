@@ -2,12 +2,22 @@
 # frozen_string_literal: true
 
 require 'json'
-require_relative '../lib/orbstack_bolt_inventory/inventory'
+require_relative '../lib/orbstack_bolt_inventory/provider/orbstack/inventory'
+require_relative '../lib/orbstack_bolt_inventory/provider/vmpooler/inventory'
 
 params = JSON.parse($stdin.read) # Read the input from Bolt
 group_patterns = params['group_patterns']
+provider = params['provider'] || 'orbstack' # Default to orbstack if not specified
 
-inventory = OrbstackBoltInventory::Inventory.new({ 'group_patterns' => group_patterns })
+# Create inventory based on provider type
+inventory = case provider
+           when 'orbstack'
+             OrbstackBoltInventory::Provider::Orbstack::Inventory.new({ 'group_patterns' => group_patterns })
+           when 'vmpooler'
+             OrbstackBoltInventory::Provider::Vmpooler::Inventory.new({ 'group_patterns' => group_patterns })
+           else
+             raise "Unknown provider type: #{provider}. Supported types: orbstack, vmpooler"
+           end
 
 # Generate the inventory and output the result
 begin
