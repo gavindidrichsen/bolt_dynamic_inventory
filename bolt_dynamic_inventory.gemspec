@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['gavin.didrichsen@gmail.com']
 
   spec.summary       = 'A bolt dynamic inventory plugin supporting multiple providers'
-  spec.description   = 'A Ruby gem to generate Puppet Bolt inventory files for various providers including Orbstack and VMPooler'
+  spec.description   = 'Generate Puppet Bolt inventory for various providers including Orbstack and VMPooler'
   spec.homepage      = 'https://github.com/gavindidrichsen/bolt_dynamic_inventory'
   spec.license       = 'MIT'
   spec.required_ruby_version = '>= 3.1.0'
