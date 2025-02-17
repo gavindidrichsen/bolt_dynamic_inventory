@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require 'orbstack_bolt_inventory/version'
-require 'orbstack_bolt_inventory/provider/orbstack/inventory'
-require 'orbstack_bolt_inventory/provider/vmpooler/inventory'
+require 'bolt_dynamic_inventory/version'
+require 'bolt_dynamic_inventory/provider/orbstack/inventory'
+require 'bolt_dynamic_inventory/provider/vmpooler/inventory'
 
-module OrbstackBoltInventory
+module BoltDynamicInventory
   class Error < StandardError; end
 
   # Convenience method to create a new inventory instance

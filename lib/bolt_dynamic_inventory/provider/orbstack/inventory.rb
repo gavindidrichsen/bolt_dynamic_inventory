@@ -3,7 +3,7 @@
 require 'json'
 require 'yaml'
 
-module OrbstackBoltInventory
+module BoltDynamicInventory
   module Provider
     module Orbstack
       # Class for generating Bolt inventory from Orbstack VMs
