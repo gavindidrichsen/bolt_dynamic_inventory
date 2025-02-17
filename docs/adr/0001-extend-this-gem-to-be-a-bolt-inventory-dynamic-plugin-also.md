@@ -12,7 +12,6 @@ Bolt plugins are very useful for enhancing bolt functionality, particularly arou
 
 One way to make the above possible is to make this code not only a gem for use in pure ruby, but also capable of acting as a bolt reference dynamic plugin.
 
-
 ## Decision
 
 Therefore, I decided to extend this gem to be also a bolt dynamic inventory reference plugin.

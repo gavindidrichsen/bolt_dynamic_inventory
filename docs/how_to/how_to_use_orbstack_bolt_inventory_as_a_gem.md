@@ -2,13 +2,23 @@
 
 ## Description
 
-The following shows how to use the [orbstack_bolt_inventory](https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory) as a gem.
+The following shows how to use the [orbstack_bolt_inventory](https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory) as a gem. The gem supports two providers:
+
+* `orbstack` for Orbstack VMs, which is the default
+* `vmpooler` for VMPooler VMs
 
 ## Pre-requisites
 
-First, refer to the [Environment Setup Guide](how_to_setup_environment.md) and then accordingly configure [direnv](https://direnv.net), [rbenv](https://github.com/rbenv/rbenv), ruby, and [orbstack](https://docs.orbstack.dev).
+Refer to 
+1. For Orbstack provider:
+   * Refer to the [Environment Setup Guide](how_to_setup_environment.md)
+   * Configure [direnv](https://direnv.net), [rbenv](https://github.com/rbenv/rbenv), ruby, and [orbstack](https://docs.orbstack.dev)
 
-Then setup your `Gemfile` to pull in the `orbstack_bolt_inventory` gem:
+2. For VMPooler provider:
+   * Ensure `floaty` is installed and configured
+   * Configure SSH access to VMPooler VMs
+
+3. Setup your `Gemfile` to pull in the `orbstack_bolt_inventory` gem:
 
 ```bash
 # ensure current environment is clean
@@ -28,23 +38,29 @@ bundle info orbstack_bolt_inventory
 
 ## Usage
 
-There are 2 ways to use the gem:
+### Orbstack Provider (Default)
 
 ```bash
-# Either produce a bolt inventory listing of all orbstack VMs
+# List all Orbstack VMs
 bundle exec orby
 
-# Or produce an inventory with groups of targets based on a regex
-bundle exec orby -g "NAME:REGEX,NAME2:REGEX2"
+# Create groups based on regex patterns
+bundle exec orby -g "agent:^agent,compiler:^compiler"
 ```
 
-Refer to the sample output in appendix below.
+### VMPooler Provider
 
-## Appendix
+```bash
+# List all VMPooler VMs (automatically groups into windows/linux)
+bundle exec orby --provider=vmpooler
 
-### Sample output
+# Create additional groups based on regex patterns
+bundle exec orby --provider=vmpooler -g "agent:tender|normal"
+```
 
-* `bundle exec orby`:
+## Sample Output
+
+### Orbstack Provider
 
 ```bash
 ➜  develop-the-bolt-dynamic-plugin git:(development) ✗ bundle exec orby
@@ -110,14 +126,60 @@ groups:
   facts:
     role: agent
   targets:
-  - agent01
-  - agent02
-  - agent03
-- name: compiler
+  - tender-punditry
+  - normal-meddling
+```
+
+### VMPooler Provider
+
+```bash
+➜  orbstack_bolt_inventory git:(development) ✗ bundle exec orby --provider=vmpooler -g "agent:tender|normal"
+---
+targets:
+- name: onetime-algebra
+  uri: onetime-algebra.delivery.puppetlabs.net
+- name: stiff-boulevard
+  uri: stiff-boulevard.delivery.puppetlabs.net
+- name: tender-punditry
+  uri: tender-punditry.delivery.puppetlabs.net
+- name: normal-meddling
+  uri: normal-meddling.delivery.puppetlabs.net
+- name: unimposing-poll
+  uri: unimposing-poll.delivery.puppetlabs.net
+groups:
+- name: windows
+  config:
+    transport: ssh
+    ssh:
+      _plugin: yaml
+      filepath: "~/.secrets/bolt/windows/ssh/vmpooler/windows_credentials.yaml"
   facts:
-    role: compiler
+    role: windows
   targets:
-  - compiler01
-  - compiler02
-➜  dump git:(development) ✗ 
+  - onetime-algebra
+  - stiff-boulevard
+  - unimposing-poll
+- name: linux
+  config:
+    transport: ssh
+    ssh:
+      native-ssh: true
+      load-config: true
+      login-shell: bash
+      tty: false
+      host-key-check: false
+      run-as: root
+      user: root
+  facts:
+    role: linux
+  targets:
+  - tender-punditry
+  - normal-meddling
+- name: agent
+  facts:
+    role: agent
+  targets:
+  - tender-punditry
+  - normal-meddling
+➜  orbstack_bolt_inventory git:(development) ✗ 
 ```
