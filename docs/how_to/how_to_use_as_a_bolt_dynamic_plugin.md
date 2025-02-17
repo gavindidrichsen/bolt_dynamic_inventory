@@ -69,7 +69,7 @@ bolt inventory show --targets=compiler
 
 ### VMPooler Provider
 
-The following will dynamically show all orbstack VMs.  Two new groups have been added by default along with "all": "windows" and "linux".
+The following will dynamically show all orbstack VMs.  For the vmpooler provider, two groups get created by default: "windows" and "linux".
 
 ```bash
 # create a basic bolt inventory file that loads the plugin
@@ -85,7 +85,7 @@ bolt inventory show --targets=windows
 bolt inventory show --targets=linux
 ```
 
-By adding a `group_patterns` section, then the bolt inventory will also include dynamic groups based on a regex pattern.  For example, give a couple vmpooler VMs that begin with "tender" and "normal", then
+By adding a `group_patterns` section, then the bolt inventory will also include dynamic groups based on a regex pattern.  For example, given a couple vmpooler VMs that begin with "tender" and "normal", then the following will include them in a new group called `agent`:
 
 ```bash
 # create a basic bolt inventory file that loads the plugin

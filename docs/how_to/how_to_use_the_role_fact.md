@@ -2,11 +2,7 @@
 
 ## Description
 
-The following illustrates the `role` fact that is included in the dynamically generated bolt inventory.
-
-One advantags of having this `role` fact is that bolt does not rely on puppet collecting this fact on any of the targets.  In other words, bolt can switch its workflow based on this fact on first execution
-
-This document illustrates one useful way of using this fact.
+This document illustrates one useful way that the `role` fact, which is included in the dynamically generated bolt inventory.
 
 ## Pre-requisites
 
@@ -71,6 +67,8 @@ EOL
 # run a command: verify that the '/etc/motd' contains the expected content
 /opt/puppetlabs/bin/bolt command run "cat /etc/motd" --targets=all --verbose
 ```
+
+Note that one advantags of having this `role` fact is that bolt does not rely on puppet to collect facts on all targets.  In other words, bolt can switch its workflow based on this fact on first execution.
 
 See sample output in the [appendix](#sample-output).
 

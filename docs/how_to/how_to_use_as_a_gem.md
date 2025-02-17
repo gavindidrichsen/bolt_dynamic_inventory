@@ -47,9 +47,11 @@ bundle exec binv --provider=vmpooler
 bundle exec binv --provider=vmpooler -g "agent:tender|normal"
 ```
 
-## Sample Output
+## Appendix
 
-### Orbstack Provider
+### Sample output
+
+Orbstack output:
 
 ```bash
 ➜  develop-the-bolt-dynamic-plugin git:(development) ✗ bundle exec binv
@@ -119,7 +121,7 @@ groups:
   - normal-meddling
 ```
 
-### VMPooler Provider
+Vmpooler output:
 
 ```bash
 ➜  bolt_dynamic_inventory git:(development) ✗ bundle exec binv --provider=vmpooler -g "agent:tender|normal"
