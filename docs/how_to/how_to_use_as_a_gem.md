@@ -25,7 +25,6 @@ EOL
 
 # install the gem and verify
 bundle install
-bundle info bolt_dynamic_inventory
 ```
 
 ### Generate orbstack inventory

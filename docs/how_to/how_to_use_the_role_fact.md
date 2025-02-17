@@ -33,7 +33,7 @@ EOL
 /opt/puppetlabs/bin/bolt module install
 
 # configure dynamic groups 'agent' and 'compiler', which will also configure the 'facts.role` for each group
-cat << 'EOL' > inventory .yaml
+cat << 'EOL' > inventory.yaml
 version: 2
 _plugin: bolt_dynamic_inventory
 provider: orbstack
@@ -59,7 +59,7 @@ plan usage::sayhello (
   apply_prep($targets)
   apply($targets) {
     class { 'motd':
-      content => "WELCOME!  I'm an [${facts['role']}\n",
+      content => "WELCOME!  I'm an [${facts['role']}]\n",
     }
   }
 }
@@ -78,115 +78,57 @@ See sample output in the [appendix](#sample-output).
 
 ### Sample output
 
-The following is an example of a bolt inventory group.  Notice that the `name` of the group and the `facts.role` are the same value.
-
-```yaml
-groups:
-- name: agent
-  facts:
-    role: agent
-  targets:
-  - agent01
-  - agent02
-  - agent03
-```
-
-The above group sits within the context of a valid bolt inventory something like the following:
-
 ```bash
-➜  adding_facts git:(development) orby -g "agent:agent0*,compiler:compil*"
----
-config:
-  transport: ssh
-  ssh:
-    native-ssh: true
-    load-config: true
-    login-shell: bash
-    tty: false
-    host-key-check: false
-    run-as: root
-    user: root
-    port: 32222
-targets:
-- name: agent01
-  uri: agent01@orb
-- name: agent02
-  uri: agent02@orb
-- name: agent03
-  uri: agent03@orb
-- name: compiler01
-  uri: compiler01@orb
-- name: compiler02
-  uri: compiler02@orb
-groups:
-- name: agent
-  facts:
-    role: agent
-  targets:
-  - agent01
-  - agent02
-  - agent03
-- name: compiler
-  facts:
-    role: compiler
-  targets:
-  - compiler01
-  - compiler02
-➜  adding_facts git:(development) 
-```
+# run the plan injecting the 'role' fact
+➜  motd git:(development) ✗ /opt/puppetlabs/bin/bolt plan run usage::sayhello --targets=all --verbose   
 
+Starting: plan usage::sayhello
+Starting: install puppet and gather facts on agent01, agent02, agent03, compiler01, compiler02
+Finished: install puppet and gather facts with 0 failures in 18.31 sec
+Starting: apply catalog on agent01, agent02, agent03, compiler01, compiler02
+Started on agent01...
+Started on compiler01...
+Started on compiler02...
+Started on agent03...
+Started on agent02...
+Finished on agent03:
+  Notice: /Stage[main]/Motd/File[/etc/motd]/content: content changed '{sha256}be552f81523dafa5f25c08706bc113b38ee7e8a83d9cef7da9691e1bdcd161a5' to '{sha256}b780a8deba7b8bed7c62e15d62ce82710d1098e38267c862f2e2d4de75299dca'
+  changed: 1, failed: 0, unchanged: 0 skipped: 0, noop: 0
+Finished on agent01:
+  Notice: /Stage[main]/Motd/File[/etc/motd]/content: content changed '{sha256}be552f81523dafa5f25c08706bc113b38ee7e8a83d9cef7da9691e1bdcd161a5' to '{sha256}b780a8deba7b8bed7c62e15d62ce82710d1098e38267c862f2e2d4de75299dca'
+  changed: 1, failed: 0, unchanged: 0 skipped: 0, noop: 0
+Finished on compiler01:
+  Notice: /Stage[main]/Motd/File[/etc/motd]/content: content changed '{sha256}416f4f846bc7ad3289e8315772871a5a6525a1e227330f790510dce383d5864f' to '{sha256}850ebe36b81c3fe5279a5cf5f5a33db893ed9435d238f8f9636c53be7f97cc81'
+  changed: 1, failed: 0, unchanged: 0 skipped: 0, noop: 0
+Finished on compiler02:
+  Notice: /Stage[main]/Motd/File[/etc/motd]/content: content changed '{sha256}416f4f846bc7ad3289e8315772871a5a6525a1e227330f790510dce383d5864f' to '{sha256}850ebe36b81c3fe5279a5cf5f5a33db893ed9435d238f8f9636c53be7f97cc81'
+  changed: 1, failed: 0, unchanged: 0 skipped: 0, noop: 0
+Finished on agent02:
+  Notice: /Stage[main]/Motd/File[/etc/motd]/content: content changed '{sha256}be552f81523dafa5f25c08706bc113b38ee7e8a83d9cef7da9691e1bdcd161a5' to '{sha256}b780a8deba7b8bed7c62e15d62ce82710d1098e38267c862f2e2d4de75299dca'
+  changed: 1, failed: 0, unchanged: 0 skipped: 0, noop: 0
+Finished: apply catalog with 0 failures in 11.18 sec
+Finished: plan usage::sayhello in 29.5 sec
+Plan completed successfully with no result
+➜  motd git:(development) ✗ 
 
-### Scenario 1 Output
-
-```bash
-# verify the plugin
-➜  develop-the-bolt-dynamic-plugin git:(development) ✗ bundle exec bolt inventory show
-Targets
-  agent01
-  agent02
-  agent03
-  compiler01
-  compiler02
-
-Inventory source
-  /Users/gavin.didrichsen/@REFERENCES/github/app/development/tools/puppet/@products/bolt/inventories/orbstack_inventory_USAGE/docs/develop-the-bolt-dynamic-plugin/inventory.yaml
-
-Target count
-  5 total, 5 from inventory, 0 adhoc
-
-Additional information
-  Use the '--targets', '--query', or '--rerun' option to view specific targets
-  Use the '--detail' option to view target configuration and data
-➜  develop-the-bolt-dynamic-plugin git:(development) ✗ 
-```
-
-### Scenario 2 Output
-
-The output above should contain the following group listing:
-
-```bash
-➜  developing_the_plugin git:(development) ✗ bundle exec bolt inventory show --targets=agent
-Targets
-  agent01
-  agent02
-  agent03
-...
-...
-Target count
-  3 total, 3 from inventory, 0 adhoc
-
-Additional information
-  Use the '--detail' option to view target configuration and data
-➜  developing_the_plugin git:(development) ✗ bundle exec bolt inventory show --targets=compiler
-Targets
-  compiler01
-  compiler02
-...
-...
-Target count
-  2 total, 2 from inventory, 0 adhoc
-
-Additional information
-  Use the '--detail' option to view target configuration and data
-➜  developing_the_plugin git:(development) ✗ 
+# verify the expected content
+➜  motd git:(development) ✗ /opt/puppetlabs/bin/bolt command run "cat /etc/motd" --targets=all --verbose
+Started on agent01...
+Started on agent03...
+Started on compiler01...
+Started on compiler02...
+Started on agent02...
+Finished on agent03:
+  WELCOME!  I'm an [agent]
+Finished on agent02:
+  WELCOME!  I'm an [agent]
+Finished on compiler01:
+  WELCOME!  I'm an [compiler]
+Finished on compiler02:
+  WELCOME!  I'm an [compiler]
+Finished on agent01:
+  WELCOME!  I'm an [agent]
+Successful on 5 targets: agent01,agent02,agent03,compiler01,compiler02
+Ran on 5 targets in 1.85 sec
+➜  motd git:(development) ✗ 
 ```

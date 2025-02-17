@@ -40,6 +40,7 @@ The following will dynamically show all orbstack VMs:
 cat << 'EOL' > inventory.yaml
 version: 2
 _plugin: bolt_dynamic_inventory
+provider: orbstack
 EOL
 
 # output the inventory of orbstack VMs
@@ -94,7 +95,7 @@ _plugin: bolt_dynamic_inventory
 provider: vmpooler
 group_patterns:
 - group: agent
-  pattern: "tender|normal"
+  pattern: "(tender|normal)"
 EOL
 
 bolt inventory show --targets=agent
