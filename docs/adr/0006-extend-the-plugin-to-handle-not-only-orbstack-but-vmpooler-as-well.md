@@ -1,4 +1,4 @@
-# 6. Extend the Plugin to Handle Not Only Orbstack but VMPooler as Well
+# 6. Extend the plugin to handle not only orbstack but vmpooler as well
 
 Date: 2025-02-17
 
