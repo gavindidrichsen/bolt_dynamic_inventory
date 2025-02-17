@@ -1,8 +1,16 @@
 {
   "description": "Resolve targets for Orbstack inventory",
   "input_method": "stdin",
-  "files": ["orbstack_bolt_inventory/lib/orbstack_bolt_inventory/inventory.rb"],
+  "files": [
+    "orbstack_bolt_inventory/lib/orbstack_bolt_inventory/provider/orbstack/inventory.rb",
+    "orbstack_bolt_inventory/lib/orbstack_bolt_inventory/provider/vmpooler/inventory.rb"
+  ],
   "parameters": {
+    "provider": {
+      "type": "String",
+      "description": "The provider to use (e.g. 'orbstack' or 'vmpooler')",
+      "enum": ["orbstack", "vmpooler"]
+    },
     "group_patterns": {
       "type": "Optional[Array[Hash]]",
       "description": "Array of group patterns with group names and regex patterns"

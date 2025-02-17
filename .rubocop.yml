@@ -1,1 +1,16 @@
 inherit_from: .rubocop_todo.yml
+
+# inherit_from: .rubocop_todo.yml
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.1
+  SuggestExtensions: false
+
+require:
+  - rubocop-rake
+  - rubocop-rspec
+
+RSpec/MultipleExpectations:
+  Enabled: true
+  Max: 10

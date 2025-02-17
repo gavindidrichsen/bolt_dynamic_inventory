@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-Although there may be a number of ways to configure the SSH connectivity for a bolt dynamic inventory plugin, I want to implement this plugin as simply as possible and I want also to be able to use the same ssh approach as I use for my terminal work.  The reason is that its much easier to troubleshoot the plugin: if my command-line cannot ssh to my orbstack VMs, then my plugin won't either.  Fix the command-line and the plugin should work as well.
+Although there may be a number of ways to configure the SSH connectivity for a bolt dynamic inventory plugin, I want to implement this plugin as simply as possible and at the same time use the same ssh approach as on my terminal.  Troubleshooting is easier: if my command-line cannot ssh to my orbstack VMs, then my plugin won't either.  Fix the command-line and the plugin should work as well.
 
 ## Decision
 

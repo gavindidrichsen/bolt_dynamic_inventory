@@ -5,7 +5,7 @@ require 'orbstack_bolt_inventory'
 require 'yaml'
 require 'optparse'
 
-options = { group_patterns: [] }
+options = { group_patterns: [], provider: 'orbstack' }
 
 # Parse command line options
 OptionParser.new do |opts|
@@ -18,10 +18,16 @@ OptionParser.new do |opts|
       { 'group' => group, 'regex' => regex }
     end
   end
+
+  opts.on('-p', '--provider PROVIDER', String,
+          'Provider to use (orbstack or vmpooler)') do |provider|
+    options[:provider] = provider
+  end
 end.parse!
 
 # Create an instance of your inventory class with the group patterns
-inventory = OrbstackBoltInventory::Inventory.new({ 'group_patterns' => options[:group_patterns] })
+inventory = OrbstackBoltInventory.new({ 'provider' => options[:provider],
+                                        'group_patterns' => options[:group_patterns] })
 
 # Generate the inventory
 inventory_data = inventory.generate

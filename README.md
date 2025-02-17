@@ -4,7 +4,7 @@ A Bolt inventory generator for Orbstack VMs.
 
 ## Usage
 
-This `orbstack_bolt_inventory` gem queries Orbstack and generates a Bolt inventory and can be used in 2 ways:
+This `orbstack_bolt_inventory` gem queries either VMPooler or Orbstack and generates a Bolt inventory.  It can be used in 2 ways:
 
 * **as a gem**.  For more information see [How to use the orbstack_bolt_inventory as a gem](./docs/how_to/how_to_use_orbstack_bolt_inventory_as_a_gem.md).
 * **as a bolt dynamic inventory plugin**.  For more information see [How to use the orbstack_bolt_inventory as a bolt dynamic plugin](./docs/how_to/how_to_use_orbstack_bolt_inventory_as_a_bolt_dynamic_plugin.md).
@@ -21,6 +21,7 @@ The project's architecture is documented through Architecture Decision Records (
 * [ADR-0002](docs/adr/0002-configure-bolt-inventory-with-native-ssh-to-keep-things-simple.md) - Configure bolt inventory with native ssh to keep things simple
 * [ADR-0003](docs/adr/0003-gather-inventory-metadata-via-the-orb-cli-to-keep-things-simple.md) - Gather inventory metadata via the 'orb' cli to keep things simple
 * [ADR-0004](docs/adr/0004-create-dynamic-inventory-groups-based-on-hostname-regex-patterns.md) - Create dynamic inventory groups based on hostname regex patterns
-* [ADR-0005](docs/adr/0005-create-group-role-fact-for-each-group-and-equal-to-the-group-name.md) - Create group 'role' fact for each group and equal to the group name
+* [ADR-0005](docs/adr/0005-add-role-fact-that-matches-the-group-name-making-puppet-switching-easier.md) - Add 'role' fact that matches the group name making puppet switching easier
+* [ADR-0006](docs/adr/0006-extend-the-plugin-to-handle-not-only-orbstack-but-vmpooler-as-well.md) - Extend the plugin to handle not only orbstack but vmpooler as well
 
 <!-- adrlogstop -->

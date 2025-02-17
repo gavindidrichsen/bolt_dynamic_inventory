@@ -2,19 +2,53 @@
 
 ## Description
 
-Before doing any of the included `how-to's`, some or all of the following must be setup.
+Before doing any of the included `how-to's`, some or all of the following must be setup depending on which provider you plan to use.
 
-### Install orbstack
+## Provider-Specific Setup
+
+### Orbstack Provider
 
 * Install [orbstack](https://docs.orbstack.dev)
-* Create 5 Ubuntu 22.04 amd64 orbstack machines with the following names.
-  * `agent01`,
-  * `agent02`,
-  * `agent03`,
-  * `compiler01`, and
+* Create Ubuntu 22.04 amd64 orbstack machines with names like:
+  * `agent01`
+  * `agent02`
+  * `agent03`
+  * `compiler01`
   * `compiler02`
 
 For more information on how to do the above from the command-line see [Create and Remove Orbstack VMs from the command-line](how_to_create_and_remove_orbstack_vms_from_cli.md).
+
+### VMPooler Provider
+
+Install and configure `floaty`:
+
+```bash
+gem install floaty
+
+# Create floaty config
+mkdir -p ~/.vmfloaty
+cat << 'EOL' > ~/.vmfloaty/config.yml
+url: https://vmpooler.delivery.puppetlabs.net/api/v1
+user: your_username
+token: your_token
+EOL
+```
+
+Configure SSH access for VMPooler VMs:
+
+```bash
+# Create SSH config directory for VMPooler
+mkdir -p ~/.secrets/bolt/windows/ssh/vmpooler
+
+# Create Windows credentials config
+cat << 'EOL' > ~/.secrets/bolt/windows/ssh/vmpooler/windows_credentials.yaml
+user: Administrator
+password: your_windows_password
+EOL
+
+# Set appropriate permissions
+chmod 600 ~/.secrets/bolt/windows/ssh/vmpooler/windows_credentials.yaml
+```
 
 ### Install direnv
 
