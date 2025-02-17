@@ -34,7 +34,7 @@ bundle install
 bundle exec binv
 
 # Create groups based on regex patterns
-bundle exec binv -g "agent:^agent,compiler:^compiler"
+bundle exec binv --groups "agent:^agent,compiler:^compiler"
 ```
 
 ### Generate vmpooler inventory
@@ -44,7 +44,7 @@ bundle exec binv -g "agent:^agent,compiler:^compiler"
 bundle exec binv --provider=vmpooler
 
 # Create additional groups based on regex patterns
-bundle exec binv --provider=vmpooler -g "agent:tender|normal"
+bundle exec binv --provider=vmpooler --groups "agent:tender|normal"
 ```
 
 ## Appendix
@@ -81,10 +81,10 @@ targets:
 ➜  develop-the-bolt-dynamic-plugin git:(development) ✗ 
 ```
 
-* `bundle exec binv -g "agent:agen*,compiler:comp*"`
+* `bundle exec binv --groups "agent:agen*,compiler:comp*"`
 
 ```bash
-➜  dump git:(development) ✗ bundle exec binv -g "agent:agen*,compiler:comp*"
+➜  dump git:(development) ✗ bundle exec binv --groups "agent:agen*,compiler:comp*"
 ---
 config:
   transport: ssh
@@ -124,7 +124,7 @@ groups:
 Vmpooler output:
 
 ```bash
-➜  bolt_dynamic_inventory git:(development) ✗ bundle exec binv --provider=vmpooler -g "agent:tender|normal"
+➜  bolt_dynamic_inventory git:(development) ✗ bundle exec binv --provider=vmpooler --groups "agent:tender|normal"
 ---
 targets:
 - name: onetime-algebra
