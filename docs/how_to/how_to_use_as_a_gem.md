@@ -2,23 +2,15 @@
 
 ## Description
 
-The following shows how to use the [bolt_dynamic_inventory](https://github.com/gavindidrichsen-puppetlabs/bolt_dynamic_inventory) as a gem. The gem supports two providers:
-
-* `orbstack` for Orbstack VMs, which is the default
-* `vmpooler` for VMPooler VMs
+The following shows how to use the [bolt_dynamic_inventory](https://github.com/gavindidrichsen/bolt_dynamic_inventory) as a gem to generate a bolt inventory for multiple providers, including `orbstack` and `vmpooler`.
 
 ## Pre-requisites
 
-Refer to 
-1. For Orbstack provider:
-   * Refer to the [Environment Setup Guide](how_to_setup_environment.md)
-   * Configure [direnv](https://direnv.net), [rbenv](https://github.com/rbenv/rbenv), ruby, and [orbstack](https://docs.orbstack.dev)
+Refer to the [Environment Setup Guide](how_to_setup_environment.md) and then configure [direnv](https://direnv.net), [rbenv](https://github.com/rbenv/rbenv), ruby, [orbstack](https://docs.orbstack.dev), and [vmpooler](https://github.com/puppetlabs/vmpooler/tree/main).
 
-2. For VMPooler provider:
-   * Ensure `floaty` is installed and configured
-   * Configure SSH access to VMPooler VMs
+## Configure the Gemfile
 
-3. Setup your `Gemfile` to pull in the `bolt_dynamic_inventory` gem:
+Setup your `Gemfile` to pull in the `bolt_dynamic_inventory` gem:
 
 ```bash
 # ensure current environment is clean
@@ -28,7 +20,7 @@ rm -rf vendor Gemfile Gemfile.lock
 cat << 'EOL' > Gemfile
 source 'https://rubygems.org'
 
-gem 'bolt_dynamic_inventory', git: 'https://github.com/gavindidrichsen-puppetlabs/bolt_dynamic_inventory.git', branch: 'main'
+gem 'bolt_dynamic_inventory', git: 'https://github.com/gavindidrichsen/bolt_dynamic_inventory.git', branch: 'main'
 EOL
 
 # install the gem and verify
@@ -36,9 +28,7 @@ bundle install
 bundle info bolt_dynamic_inventory
 ```
 
-## Usage
-
-### Orbstack Provider (Default)
+### Generate orbstack inventory
 
 ```bash
 # List all Orbstack VMs
@@ -48,7 +38,7 @@ bundle exec binv
 bundle exec binv -g "agent:^agent,compiler:^compiler"
 ```
 
-### VMPooler Provider
+### Generate vmpooler inventory
 
 ```bash
 # List all VMPooler VMs (automatically groups into windows/linux)

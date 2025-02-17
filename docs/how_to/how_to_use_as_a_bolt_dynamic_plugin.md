@@ -2,7 +2,7 @@
 
 ## Description
 
-The following shows how to use the [bolt_dynamic_inventory](https://github.com/gavindidrichsen-puppetlabs/bolt_dynamic_inventory) as a [bolt dynamic inventory plugin](https://www.puppet.com/docs/bolt/latest/writing_plugins.html#reference-plugins). The plugin supports two providers:
+The following shows how to use the [bolt_dynamic_inventory](https://github.com/gavindidrichsen/bolt_dynamic_inventory) as a [bolt dynamic inventory plugin](https://www.puppet.com/docs/bolt/latest/writing_plugins.html#reference-plugins). The plugin supports two providers:
 
 * `orbstack` for Orbstack VMs, which is the default
 * `vmpooler` for VMPooler VMs
@@ -21,7 +21,7 @@ cat << 'EOL' > bolt-project.yaml
 ---
 name: usage
 modules:
-  - git: https://github.com/gavindidrichsen-puppetlabs/bolt_dynamic_inventory.git
+  - git: https://github.com/gavindidrichsen/bolt_dynamic_inventory.git
     ref: main
 EOL
 
@@ -53,6 +53,7 @@ By adding a `group_patterns` section, then the bolt inventory will also include 
 cat << 'EOL' > inventory.yaml
 version: 2
 _plugin: bolt_dynamic_inventory
+provider: orbstack
 group_patterns:
 - group: agent
   regex: "^agent"
@@ -96,5 +97,5 @@ group_patterns:
   pattern: "tender|normal"
 EOL
 
-bundle inventory show --targets=agent
+bolt inventory show --targets=agent
 ```
