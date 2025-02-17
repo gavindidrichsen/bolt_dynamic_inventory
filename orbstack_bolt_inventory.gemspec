@@ -29,6 +29,9 @@ Gem::Specification.new do |spec|
                           CHANGELOG*
                           README*
                         ])
+
+  # Runtime dependencies
+  spec.add_runtime_dependency 'vmfloaty'
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
