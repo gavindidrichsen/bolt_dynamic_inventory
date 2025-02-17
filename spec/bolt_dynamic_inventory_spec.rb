@@ -120,9 +120,9 @@ RSpec.describe BoltDynamicInventory do
         windows_group = result['groups'].find { |g| g['name'] == 'windows' }
         expect(windows_group['targets']).to contain_exactly('onetime-algebra')
         expect(windows_group['facts']).to eq('role' => 'windows')
-        expect(windows_group['config']['ssh']).to include(
+        expect(windows_group['config']).to include(
           '_plugin' => 'yaml',
-          'filepath' => '~/.secrets/bolt/windows/ssh/vmpooler/windows_credentials.yaml'
+          'filepath' => '~/.secrets/bolt/windows/credentials.yaml'
         )
 
         # Check linux group
