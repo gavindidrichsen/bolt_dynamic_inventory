@@ -24,7 +24,7 @@ cat << 'EOL' > bolt-project.yaml
 ---
 name: usage
 modules:
-  - git: https://github.com/gavindidrichsen-puppetlabs/bolt_dynamic_inventory.git
+  - git: https://github.com/gavindidrichsen/bolt_dynamic_inventory.git
     ref: main
   - puppetlabs-motd
 EOL
