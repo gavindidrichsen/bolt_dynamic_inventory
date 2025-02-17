@@ -1,6 +1,6 @@
 # BoltDynamicInventory
 
-A Bolt inventory generator for Orbstack VMs.
+A Bolt inventory generator for VMs on various providers including orbstack and vmpooler.
 
 ## Usage
 
