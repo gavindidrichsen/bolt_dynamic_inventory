@@ -62,11 +62,8 @@ module BoltDynamicInventory
             {
               'name' => 'windows',
               'config' => {
-                'transport' => 'ssh',
-                'ssh' => {
-                  '_plugin' => 'yaml',
-                  'filepath' => '~/.secrets/bolt/windows/ssh/vmpooler/windows_credentials.yaml'
-                }
+                '_plugin' => 'yaml',
+                'filepath' => '~/.secrets/bolt/windows/credentials.yaml'
               },
               'facts' => { 'role' => 'windows' },
               'targets' => windows_targets

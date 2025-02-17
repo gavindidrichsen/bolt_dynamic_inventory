@@ -34,20 +34,59 @@ token: your_token
 EOL
 ```
 
-Configure SSH access for VMPooler VMs:
+Create a 'secrets' directory:
 
 ```bash
 # Create SSH config directory for VMPooler
-mkdir -p ~/.secrets/bolt/windows/ssh/vmpooler
+mkdir -p ~/.secrets/bolt/windows
+```
 
-# Create Windows credentials config
-cat << 'EOL' > ~/.secrets/bolt/windows/ssh/vmpooler/windows_credentials.yaml
-user: Administrator
-password: your_windows_password
+Export the windows password as an environment variable making sure to inject the correct password for `<REPLACEME>`:
+
+```bash
+export WINDOWS_PASSWORD='<REPLACEME>'
+```
+
+Then either create an **SSH credential** file:
+
+```bash
+# create an SSH windows credentials config file
+cat << EOL > ~/.secrets/bolt/windows/credentials.yaml
+---
+# See <https://www.puppet.com/docs/bolt/latest/bolt_transports_reference.html#ssh>
+transport: ssh
+ssh:
+  user: Administrator
+  password: ${WINDOWS_PASSWORD}
+  encryption-algorithms: 
+    - aes128-ctr
+    - aes192-ctr
+    - aes256-ctr
+    - aes128-gcm@openssh.com
+    - aes256-gcm@openssh.com
+    - chacha20-poly1305@openssh.com
+  host-key-check: false
+  ssl: false
 EOL
+```
 
+or a **winrm credential** file:
+
+```bash
+cat << EOL > ~/.secrets/bolt/windows/credentials.yaml
+---
+# See <https://www.puppet.com/docs/bolt/latest/bolt_transports_reference.html#ssh>
+transport: winrm
+winrm:
+  user: Administrator
+  password: ${WINDOWS_PASSWORD}
+  ssl: false
+EOL
+```
+
+```bash
 # Set appropriate permissions
-chmod 600 ~/.secrets/bolt/windows/ssh/vmpooler/windows_credentials.yaml
+chmod 600 ~/.secrets/bolt/windows/credentials.yaml
 ```
 
 ### Install direnv
