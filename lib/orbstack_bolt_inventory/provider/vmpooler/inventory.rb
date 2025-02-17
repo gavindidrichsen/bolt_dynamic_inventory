@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'English'
 require 'json'
 require 'yaml'
 
@@ -22,11 +23,11 @@ module OrbstackBoltInventory
         # Fetch VMPooler VM details
         def fetch_vmpooler_vms
           output = `bundle exec floaty list --active --json`
-          raise "Failed to get VM list from floaty" unless $?.success?
+          raise 'Failed to get VM list from floaty' unless $CHILD_STATUS.success?
 
           # Parse JSON output
           data = JSON.parse(output)
-          
+
           # Extract VMs that are in 'filled' state and have allocated resources
           data.values.select { |job| job['state'] == 'filled' }.flat_map do |job|
             job['allocated_resources'].map do |resource|
@@ -50,42 +51,42 @@ module OrbstackBoltInventory
           end
 
           # group the targets by type, in other worder, either windows or linux
-          windows_targets = targets_with_type.select { |t| t["type"].include?("win") }.map { |t| t["name"] }
-          linux_targets = targets_with_type.reject { |t| t["type"].include?("win") }.map { |t| t["name"] }
+          windows_targets = targets_with_type.select { |t| t['type'].include?('win') }.map { |t| t['name'] }
+          linux_targets = targets_with_type.reject { |t| t['type'].include?('win') }.map { |t| t['name'] }
 
           # now remove the 'type' field; otherwise bolt will complain
-          targets = targets_with_type.map { |t| t.reject { |k, _| k == "type" } }
+          targets = targets_with_type.map { |t| t.except('type') }
 
           # Start with base groups
           base_groups = [
             {
-              "name" => "windows",
-              "config" => {
-                "transport" => "ssh",
-                "ssh" => {
-                  "_plugin" => "yaml",
-                  "filepath" => "~/.secrets/bolt/windows/ssh/vmpooler/windows_credentials.yaml"
+              'name' => 'windows',
+              'config' => {
+                'transport' => 'ssh',
+                'ssh' => {
+                  '_plugin' => 'yaml',
+                  'filepath' => '~/.secrets/bolt/windows/ssh/vmpooler/windows_credentials.yaml'
                 }
               },
-              "facts" => { "role" => "windows" },
-              "targets" => windows_targets
+              'facts' => { 'role' => 'windows' },
+              'targets' => windows_targets
             },
             {
-              "name" => "linux",
-              "config" => {
-                "transport" => "ssh",
-                "ssh" => {
-                  "native-ssh" => true,
-                  "load-config" => true,
-                  "login-shell" => "bash",
-                  "tty" => false,
-                  "host-key-check" => false,
-                  "run-as" => "root",
-                  "user" => "root"
+              'name' => 'linux',
+              'config' => {
+                'transport' => 'ssh',
+                'ssh' => {
+                  'native-ssh' => true,
+                  'load-config' => true,
+                  'login-shell' => 'bash',
+                  'tty' => false,
+                  'host-key-check' => false,
+                  'run-as' => 'root',
+                  'user' => 'root'
                 }
               },
-              "facts" => { "role" => "linux" },
-              "targets" => linux_targets
+              'facts' => { 'role' => 'linux' },
+              'targets' => linux_targets
             }
           ]
 
@@ -94,12 +95,10 @@ module OrbstackBoltInventory
           regex_groups = generate_groups(target_names)
 
           # Construct inventory with both base and regex groups
-          inventory = {
-            "targets" => targets,
-            "groups" => base_groups + regex_groups
+          {
+            'targets' => targets,
+            'groups' => base_groups + regex_groups
           }
-
-          inventory
         end
 
         private
@@ -133,7 +132,7 @@ module OrbstackBoltInventory
           return [] if @group_patterns.empty?
 
           @group_patterns.each_with_object([]) do |pattern, groups|
-            matching_targets = target_names.select { |name| name.match?(pattern[:regex]) }
+            matching_targets = target_names.grep(pattern[:regex])
             next if matching_targets.empty?
 
             groups << {

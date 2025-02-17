@@ -11,13 +11,13 @@ module OrbstackBoltInventory
   def self.new(config = {})
     provider_type = config['provider'] || 'orbstack'
     provider_class = case provider_type
-                    when 'orbstack'
-                      Provider::Orbstack::Inventory
-                    when 'vmpooler'
-                      Provider::Vmpooler::Inventory
-                    else
-                      raise Error, "Unknown provider type: #{provider_type}. Supported types: orbstack, vmpooler"
-                    end
+                     when 'orbstack'
+                       Provider::Orbstack::Inventory
+                     when 'vmpooler'
+                       Provider::Vmpooler::Inventory
+                     else
+                       raise Error, "Unknown provider type: #{provider_type}. Supported types: orbstack, vmpooler"
+                     end
     provider_class.new(config)
   end
 end

@@ -30,7 +30,7 @@ RSpec.describe OrbstackBoltInventory do
       ]
     end
 
-    before(:each) do
+    before do
       allow_any_instance_of(described_class).to receive(:fetch_orbstack_vms).and_return(mock_orbs)
     end
 
@@ -101,7 +101,7 @@ RSpec.describe OrbstackBoltInventory do
       ]
     end
 
-    before(:each) do
+    before do
       allow_any_instance_of(described_class).to receive(:fetch_vmpooler_vms).and_return(mock_vms)
     end
 

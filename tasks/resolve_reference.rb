@@ -11,13 +11,13 @@ provider = params['provider'] || 'orbstack' # Default to orbstack if not specifi
 
 # Create inventory based on provider type
 inventory = case provider
-           when 'orbstack'
-             OrbstackBoltInventory::Provider::Orbstack::Inventory.new({ 'group_patterns' => group_patterns })
-           when 'vmpooler'
-             OrbstackBoltInventory::Provider::Vmpooler::Inventory.new({ 'group_patterns' => group_patterns })
-           else
-             raise "Unknown provider type: #{provider}. Supported types: orbstack, vmpooler"
-           end
+            when 'orbstack'
+              OrbstackBoltInventory::Provider::Orbstack::Inventory.new({ 'group_patterns' => group_patterns })
+            when 'vmpooler'
+              OrbstackBoltInventory::Provider::Vmpooler::Inventory.new({ 'group_patterns' => group_patterns })
+            else
+              raise "Unknown provider type: #{provider}. Supported types: orbstack, vmpooler"
+            end
 
 # Generate the inventory and output the result
 begin

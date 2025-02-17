@@ -31,7 +31,7 @@ Gem::Specification.new do |spec|
                         ])
 
   # Runtime dependencies
-  spec.add_runtime_dependency 'vmfloaty'
+  spec.add_dependency 'vmfloaty'
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
@@ -45,6 +45,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake', '~> 13.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'rubocop', '~> 1.21'
-  spec.add_development_dependency "rubocop-rake", "~> 0.6.0"
-  spec.add_development_dependency "rubocop-rspec", "~> 2.25.0"
+  spec.add_development_dependency 'rubocop-rake', '~> 0.6.0'
+  spec.add_development_dependency 'rubocop-rspec', '~> 2.26.1'
+  spec.metadata['rubygems_mfa_required'] = 'true'
 end

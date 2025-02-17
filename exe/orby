@@ -26,7 +26,8 @@ OptionParser.new do |opts|
 end.parse!
 
 # Create an instance of your inventory class with the group patterns
-inventory = OrbstackBoltInventory.new({ 'provider' => options[:provider], 'group_patterns' => options[:group_patterns] })
+inventory = OrbstackBoltInventory.new({ 'provider' => options[:provider],
+                                        'group_patterns' => options[:group_patterns] })
 
 # Generate the inventory
 inventory_data = inventory.generate

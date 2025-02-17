@@ -77,12 +77,12 @@ module OrbstackBoltInventory
           target_names = orbs.map { |orb| orb['name'] }
 
           @group_patterns.each_with_object([]) do |pattern, groups|
-            matching_targets = target_names.select { |name| name.match?(pattern[:regex]) }
+            matching_targets = target_names.grep(pattern[:regex])
             next if matching_targets.empty?
 
             groups << {
               'name' => pattern[:group],
-              'facts' => { 'role' => pattern[:group]},
+              'facts' => { 'role' => pattern[:group] },
               'targets' => matching_targets
             }
           end
