@@ -1,26 +1,26 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'orbstack_bolt_inventory'
+require 'bolt_dynamic_inventory'
 
-RSpec.describe OrbstackBoltInventory do
+RSpec.describe BoltDynamicInventory do
   describe '.new' do
     it 'creates an Orbstack provider by default' do
       inventory = described_class.new
-      expect(inventory).to be_a(OrbstackBoltInventory::Provider::Orbstack::Inventory)
+      expect(inventory).to be_a(BoltDynamicInventory::Provider::Orbstack::Inventory)
     end
 
     it 'creates a VMPooler provider when specified' do
       inventory = described_class.new('provider' => 'vmpooler')
-      expect(inventory).to be_a(OrbstackBoltInventory::Provider::Vmpooler::Inventory)
+      expect(inventory).to be_a(BoltDynamicInventory::Provider::Vmpooler::Inventory)
     end
 
     it 'raises error for unknown provider' do
-      expect { described_class.new('provider' => 'unknown') }.to raise_error(OrbstackBoltInventory::Error)
+      expect { described_class.new('provider' => 'unknown') }.to raise_error(BoltDynamicInventory::Error)
     end
   end
 
-  describe OrbstackBoltInventory::Provider::Orbstack::Inventory do
+  describe BoltDynamicInventory::Provider::Orbstack::Inventory do
     let(:mock_orbs) do
       [
         { 'name' => 'agent01', 'status' => 'running' },
@@ -92,7 +92,7 @@ RSpec.describe OrbstackBoltInventory do
     end
   end
 
-  describe OrbstackBoltInventory::Provider::Vmpooler::Inventory do
+  describe BoltDynamicInventory::Provider::Vmpooler::Inventory do
     let(:mock_vms) do
       [
         { 'hostname' => 'onetime-algebra.delivery.puppetlabs.net', 'type' => 'win-2019-x86_64' },

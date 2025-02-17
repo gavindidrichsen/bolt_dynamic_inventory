@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'orbstack_bolt_inventory'
+require 'bolt_dynamic_inventory'
 require 'yaml'
 require 'optparse'
 
@@ -9,7 +9,7 @@ options = { group_patterns: [], provider: 'orbstack' }
 
 # Parse command line options
 OptionParser.new do |opts|
-  opts.banner = 'Usage: orby [options]'
+  opts.banner = 'Usage: binv [options]'
 
   opts.on('-g', '--groups "NAME:REGEX,NAME2:REGEX2"', Array,
           'Group patterns (format: groupname:regex, comma-separated)') do |patterns|
@@ -26,8 +26,8 @@ OptionParser.new do |opts|
 end.parse!
 
 # Create an instance of your inventory class with the group patterns
-inventory = OrbstackBoltInventory.new({ 'provider' => options[:provider],
-                                        'group_patterns' => options[:group_patterns] })
+inventory = BoltDynamicInventory.new({ 'provider' => options[:provider],
+                                       'group_patterns' => options[:group_patterns] })
 
 # Generate the inventory
 inventory_data = inventory.generate

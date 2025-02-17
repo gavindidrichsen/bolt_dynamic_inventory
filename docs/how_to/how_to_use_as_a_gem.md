@@ -1,8 +1,8 @@
-# How to use the orbstack_bolt_inventory as a gem
+# How to use as a gem
 
 ## Description
 
-The following shows how to use the [orbstack_bolt_inventory](https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory) as a gem. The gem supports two providers:
+The following shows how to use the [bolt_dynamic_inventory](https://github.com/gavindidrichsen-puppetlabs/bolt_dynamic_inventory) as a gem. The gem supports two providers:
 
 * `orbstack` for Orbstack VMs, which is the default
 * `vmpooler` for VMPooler VMs
@@ -18,22 +18,22 @@ Refer to
    * Ensure `floaty` is installed and configured
    * Configure SSH access to VMPooler VMs
 
-3. Setup your `Gemfile` to pull in the `orbstack_bolt_inventory` gem:
+3. Setup your `Gemfile` to pull in the `bolt_dynamic_inventory` gem:
 
 ```bash
 # ensure current environment is clean
 rm -rf vendor Gemfile Gemfile.lock
 
-# create a Gemfile that loads 'orbstack_bolt_inventory' as a gem
+# create a Gemfile that loads 'bolt_dynamic_inventory' as a gem
 cat << 'EOL' > Gemfile
 source 'https://rubygems.org'
 
-gem 'orbstack_bolt_inventory', git: 'https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory.git', branch: 'main'
+gem 'bolt_dynamic_inventory', git: 'https://github.com/gavindidrichsen-puppetlabs/bolt_dynamic_inventory.git', branch: 'main'
 EOL
 
 # install the gem and verify
 bundle install
-bundle info orbstack_bolt_inventory
+bundle info bolt_dynamic_inventory
 ```
 
 ## Usage
@@ -42,20 +42,20 @@ bundle info orbstack_bolt_inventory
 
 ```bash
 # List all Orbstack VMs
-bundle exec orby
+bundle exec binv
 
 # Create groups based on regex patterns
-bundle exec orby -g "agent:^agent,compiler:^compiler"
+bundle exec binv -g "agent:^agent,compiler:^compiler"
 ```
 
 ### VMPooler Provider
 
 ```bash
 # List all VMPooler VMs (automatically groups into windows/linux)
-bundle exec orby --provider=vmpooler
+bundle exec binv --provider=vmpooler
 
 # Create additional groups based on regex patterns
-bundle exec orby --provider=vmpooler -g "agent:tender|normal"
+bundle exec binv --provider=vmpooler -g "agent:tender|normal"
 ```
 
 ## Sample Output
@@ -63,7 +63,7 @@ bundle exec orby --provider=vmpooler -g "agent:tender|normal"
 ### Orbstack Provider
 
 ```bash
-➜  develop-the-bolt-dynamic-plugin git:(development) ✗ bundle exec orby
+➜  develop-the-bolt-dynamic-plugin git:(development) ✗ bundle exec binv
 ---
 config:
   transport: ssh
@@ -90,10 +90,10 @@ targets:
 ➜  develop-the-bolt-dynamic-plugin git:(development) ✗ 
 ```
 
-* `bundle exec orby -g "agent:agen*,compiler:comp*"`
+* `bundle exec binv -g "agent:agen*,compiler:comp*"`
 
 ```bash
-➜  dump git:(development) ✗ bundle exec orby -g "agent:agen*,compiler:comp*"
+➜  dump git:(development) ✗ bundle exec binv -g "agent:agen*,compiler:comp*"
 ---
 config:
   transport: ssh
@@ -133,7 +133,7 @@ groups:
 ### VMPooler Provider
 
 ```bash
-➜  orbstack_bolt_inventory git:(development) ✗ bundle exec orby --provider=vmpooler -g "agent:tender|normal"
+➜  bolt_dynamic_inventory git:(development) ✗ bundle exec binv --provider=vmpooler -g "agent:tender|normal"
 ---
 targets:
 - name: onetime-algebra
@@ -181,5 +181,5 @@ groups:
   targets:
   - tender-punditry
   - normal-meddling
-➜  orbstack_bolt_inventory git:(development) ✗ 
+➜  bolt_dynamic_inventory git:(development) ✗ 
 ```

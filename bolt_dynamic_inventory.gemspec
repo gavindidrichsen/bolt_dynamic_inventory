@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
-require_relative 'lib/orbstack_bolt_inventory/version'
+require_relative 'lib/bolt_dynamic_inventory/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'orbstack_bolt_inventory'
-  spec.version       = OrbstackBoltInventory::VERSION
+  spec.name          = 'bolt_dynamic_inventory'
+  spec.version       = BoltDynamicInventory::VERSION
   spec.authors       = ['Gavin Didrichsen']
   spec.email         = ['gavin.didrichsen@gmail.com']
 
-  spec.summary       = 'Generate Bolt inventory for Orbstack VMs'
-  spec.description   = 'A Ruby gem to generate Puppet Bolt inventory files for Orbstack virtual machines'
-  spec.homepage      = 'https://github.com/gavindidrichsen/orbstack_bolt_inventory'
+  spec.summary       = 'A bolt dynamic inventory plugin supporting multiple providers'
+  spec.description   = 'Generate Puppet Bolt inventory for various providers including Orbstack and VMPooler'
+  spec.homepage      = 'https://github.com/gavindidrichsen/bolt_dynamic_inventory'
   spec.license       = 'MIT'
   spec.required_ruby_version = '>= 3.1.0'
 

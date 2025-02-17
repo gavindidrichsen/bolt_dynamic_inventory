@@ -1,8 +1,8 @@
-# How to use the orbstack_bolt_inventory as a bolt dynamic plugin
+# How to use as a bolt dynamic plugin
 
 ## Description
 
-The following shows how to use the [orbstack_bolt_inventory](https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory) as a [bolt dynamic inventory plugin](https://www.puppet.com/docs/bolt/latest/writing_plugins.html#reference-plugins). The plugin supports two providers:
+The following shows how to use the [bolt_dynamic_inventory](https://github.com/gavindidrichsen-puppetlabs/bolt_dynamic_inventory) as a [bolt dynamic inventory plugin](https://www.puppet.com/docs/bolt/latest/writing_plugins.html#reference-plugins). The plugin supports two providers:
 
 * `orbstack` for Orbstack VMs, which is the default
 * `vmpooler` for VMPooler VMs
@@ -13,15 +13,15 @@ For more information see [How to create a basic dynamic inventory plugin](./how_
 
 First, refer to the [Environment Setup Guide](how_to_setup_environment.md) and then configure [orbstack](https://docs.orbstack.dev) and [VMPooler](https://vmpooler.com/).
 
-Finally, include the `orbstack_bolt_inventory` module in your `bolt-project.yaml` and install it:
+Finally, include the `bolt_dynamic_inventory` module in your `bolt-project.yaml` and install it:
 
 ```bash
-# create a bolt-project.yaml that loads the 'orbstack_bolt_inventory' as a bolt plugin
+# create a bolt-project.yaml that loads the 'bolt_dynamic_inventory' as a bolt plugin
 cat << 'EOL' > bolt-project.yaml
 ---
 name: usage
 modules:
-  - git: https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory.git
+  - git: https://github.com/gavindidrichsen-puppetlabs/bolt_dynamic_inventory.git
     ref: main
 EOL
 
@@ -39,7 +39,7 @@ The following will dynamically show all orbstack VMs:
 # create a basic bolt inventory file that loads the plugin
 cat << 'EOL' > inventory.yaml
 version: 2
-_plugin: orbstack_bolt_inventory
+_plugin: bolt_dynamic_inventory
 EOL
 
 # output the inventory of orbstack VMs
@@ -52,7 +52,7 @@ By adding a `group_patterns` section, then the bolt inventory will also include 
 # update your bolt inventory to contain group/regex configuration, e.g.,
 cat << 'EOL' > inventory.yaml
 version: 2
-_plugin: orbstack_bolt_inventory
+_plugin: bolt_dynamic_inventory
 group_patterns:
 - group: agent
   regex: "^agent"
@@ -73,7 +73,7 @@ The following will dynamically show all orbstack VMs.  Two new groups have been 
 # create a basic bolt inventory file that loads the plugin
 cat << 'EOL' > inventory.yaml
 version: 2
-_plugin: orbstack_bolt_inventory
+_plugin: bolt_dynamic_inventory
 provider: vmpooler
 EOL
 
@@ -89,7 +89,7 @@ By adding a `group_patterns` section, then the bolt inventory will also include 
 # create a basic bolt inventory file that loads the plugin
 cat << 'EOL' > inventory.yaml
 version: 2
-_plugin: orbstack_bolt_inventory
+_plugin: bolt_dynamic_inventory
 provider: vmpooler
 group_patterns:
 - group: agent

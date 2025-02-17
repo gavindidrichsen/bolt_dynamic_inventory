@@ -1,13 +1,13 @@
-# OrbstackBoltInventory
+# BoltDynamicInventory
 
-A Bolt inventory generator for Orbstack VMs.
+A Bolt inventory generator for VMs on various providers including orbstack and vmpooler.
 
 ## Usage
 
-This `orbstack_bolt_inventory` gem queries either VMPooler or Orbstack and generates a Bolt inventory.  It can be used in 2 ways:
+This `bolt_dynamic_inventory` gem queries either VMPooler or Orbstack and generates a Bolt inventory.  It can be used in 2 ways:
 
-* **as a gem**.  For more information see [How to use the orbstack_bolt_inventory as a gem](./docs/how_to/how_to_use_orbstack_bolt_inventory_as_a_gem.md).
-* **as a bolt dynamic inventory plugin**.  For more information see [How to use the orbstack_bolt_inventory as a bolt dynamic plugin](./docs/how_to/how_to_use_orbstack_bolt_inventory_as_a_bolt_dynamic_plugin.md).
+* **as a gem**.  For more information see [How to use as a gem](./docs/how_to/how_to_use_as_a_gem.md).
+* **as a bolt dynamic inventory plugin**.  For more information see [How to use as a bolt dynamic plugin](./docs/how_to/how_to_use_as_a_bolt_dynamic_plugin.md).
 
 This repository also explains [How to create a basic dynamic inventory plugin](./docs/how_to/how_to_create_a_basic_bolt_inventory_plugin.md).  Other various how-to guides are beneath the [How To Guide Directory](./docs/how_to/).
 

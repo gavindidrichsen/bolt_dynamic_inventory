@@ -2,12 +2,96 @@
 
 ## Description
 
-The following shows how to use the `role` fact which is a feature of the [orbstack_bolt_inventory](https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory) plugin.
+The following illustrates the `role` fact that is included in the dynamically generated bolt inventory.
 
-The following is an example `inventory.yaml` with 2 groups of targets `agent` and `compiler`.  Notice:
+One advantags of having this `role` fact is that bolt does not rely on puppet collecting this fact on any of the targets.  In other words, bolt can switch its workflow based on this fact on first execution
 
-* Each group contains not only a list of `targets` but also a special `facts`.  
-* The `role` fact is the same value as the `group`.
+This document illustrates one useful way of using this fact.
+
+## Pre-requisites
+
+First, refer to the [Environment Setup Guide](how_to_setup_environment.md) and then accordingly configure [direnv](https://direnv.net) and [orbstack](https://docs.orbstack.dev). Also, ensure `bolt` is installed on your system e.g., `/opt/puppetlabs/bolt`.
+
+## Usage
+
+### Configure a bolt project that includes puppetlabs-motd
+
+Now:
+
+```bash
+# create a bolt-project.yaml that loads the 'bolt_dynamic_inventory' and 'puppetlabs-motd' modules
+cat << 'EOL' > bolt-project.yaml
+---
+name: usage
+modules:
+  - git: https://github.com/gavindidrichsen-puppetlabs/bolt_dynamic_inventory.git
+    ref: main
+  - puppetlabs-motd
+EOL
+
+# install the modules
+/opt/puppetlabs/bin/bolt module install
+
+# configure dynamic groups 'agent' and 'compiler', which will also configure the 'facts.role` for each group
+cat << 'EOL' > inventory .yaml
+version: 2
+_plugin: bolt_dynamic_inventory
+provider: orbstack
+group_patterns:
+- group: agent
+  regex: "^agent"
+- group: compiler
+  regex: "^compiler"
+EOL
+```
+
+## Create a plan that exercises the new 'role' fact
+
+Run the `class { 'motd': ... }` against will add a new `/etc/motd` containing the `$facts.role` for each target
+
+```bash
+# create a new `usage::sayhello` plan
+mkdir -p plans
+cat << 'EOL' > plans/sayhello.pp
+plan usage::sayhello (
+  TargetSpec $targets = 'localhost'
+) {
+  apply_prep($targets)
+  apply($targets) {
+    class { 'motd':
+      content => "WELCOME!  I'm an [${facts['role']}\n",
+    }
+  }
+}
+EOL
+
+# run the plan
+/opt/puppetlabs/bin/bolt plan run usage::sayhello --targets=all --verbose
+
+# run a command: verify that the '/etc/motd' contains the expected content
+/opt/puppetlabs/bin/bolt command run "cat /etc/motd" --targets=all --verbose
+```
+
+See sample output in the [appendix](#sample-output).
+
+## Appendix
+
+### Sample output
+
+The following is an example of a bolt inventory group.  Notice that the `name` of the group and the `facts.role` are the same value.
+
+```yaml
+groups:
+- name: agent
+  facts:
+    role: agent
+  targets:
+  - agent01
+  - agent02
+  - agent03
+```
+
+The above group sits within the context of a valid bolt inventory something like the following:
 
 ```bash
 ➜  adding_facts git:(development) orby -g "agent:agent0*,compiler:compil*"
@@ -51,101 +135,6 @@ groups:
 ➜  adding_facts git:(development) 
 ```
 
-## Pre-requisites
-
-First, refer to the [Environment Setup Guide](how_to_setup_environment.md) and then accordingly configure [direnv](https://direnv.net) and [orbstack](https://docs.orbstack.dev). Also, ensure `bolt` is installed on your system e.g., `/opt/puppetlabs/bolt`.
-
-Finally, include the following modules in your `bolt-project.yaml`:
-
-* `orbstack_bolt_inventory`
-* `puppetlabs-motd`, which configures the message for today
-
-```bash
-# create a bolt-project.yaml that loads the 'orbstack_bolt_inventory' as a bolt plugin
-cat << 'EOL' > bolt-project.yaml
----
-name: usage
-modules:
-  - git: https://github.com/gavindidrichsen-puppetlabs/orbstack_bolt_inventory.git
-    ref: main
-  - puppetlabs-motd
-EOL
-
-# install the new module
-/opt/puppetlabs/bin/bolt module install
-
-# configure dynamic groups 'agent' and 'compiler'; each target will also have it's own 'role' fact, in other words
-# agent01 will have a $facts.role = 'agent'
-cat << 'EOL' > inventory .yaml
-version: 2
-_plugin: orbstack_bolt_inventory
-group_patterns:
-- group: agent
-  regex: "^agent"
-- group: compiler
-  regex: "^compiler"
-EOL
-```
-
-## Scenario 1: Basic Use
-
-Run the `class { 'motd': ... }` against will add a new `/etc/motd` containing the `$facts.role` for each target
-
-```bash
-# create a new `usage::sayhello` plan
-mkdir -p plans
-cat << 'EOL' > plans/sayhello.pp
-plan usage::sayhello (
-  TargetSpec $targets = 'localhost'
-) {
-  apply_prep($targets)
-  apply($targets) {
-    class { 'motd':
-      content => "WELCOME!  I'm an [${facts['role']}\n",
-    }
-  }
-}
-EOL
-
-# run the plan
-/opt/puppetlabs/bin/bolt plan run usage::sayhello --targets=all --verbose
-
-/opt/puppetlabs/bin/bolt command run "cat /etc/motd" --targets=all --verbose
-```
-
-See sample output in [Scenario 1 Output](#scenario-1-output).
-
-## Scenario 2: Configuring Regex Groups
-
-Configure bolt to dynamically configure bolt inventory groups based on regex patterns:
-
-```bash
-# clean-up any existing setup
-rm -f inventory.yaml
-
-# update your bolt inventory to contain group/regex configuration, e.g.,
-cat << 'EOL' > inventory.yaml
-version: 2
-_plugin: orbstack_bolt_inventory
-group_patterns:
-- group: agent
-  regex: "^agent"
-- group: compiler
-  regex: "^compiler"
-EOL
-
-# show the machines in particular groups
-bundle exec bolt inventory show --targets=agent
-bundle exec bolt inventory show --targets=compiler
-```
-
-See sample output in [Scenario 2 Output](#scenario-2-output).
-
-## Clean up
-
-Remove the orbstack VMs either manually or via command-line.  For more information see [Create and Remove Orbstack VMs from the command-line](how_to_create_and_remove_orbstack_vms_from_cli.md).
-
-## Appendix
 
 ### Scenario 1 Output
 

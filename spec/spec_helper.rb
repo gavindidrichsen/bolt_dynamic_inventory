@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'bundler/setup'
-require 'orbstack_bolt_inventory'
+require 'bolt_dynamic_inventory'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

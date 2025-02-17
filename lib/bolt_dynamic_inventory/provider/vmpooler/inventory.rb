@@ -4,7 +4,7 @@ require 'English'
 require 'json'
 require 'yaml'
 
-module OrbstackBoltInventory
+module BoltDynamicInventory
   module Provider
     module Vmpooler
       # Class for generating Bolt inventory from VMPooler VMs
