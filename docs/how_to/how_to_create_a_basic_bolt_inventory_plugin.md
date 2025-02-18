@@ -75,7 +75,7 @@ Create the `resolve_reference` task required by the plugin.  In other words,
 # create the 'resolve_reference' task
 mkdir -p modules/basic_plugin/tasks
 
-# first the metadata:
+# first, the metadata:
 cat << 'EOL' > modules/basic_plugin/tasks/resolve_reference.json
 {
   "description": "Resolve targets for Orbstack inventory",
@@ -84,7 +84,7 @@ cat << 'EOL' > modules/basic_plugin/tasks/resolve_reference.json
 }
 EOL
 
-# then the resolve_referenc.rb
+# second, the resolve_referenc.rb
 cat << 'EOL' > modules/basic_plugin/tasks/resolve_reference.rb
 #!/usr/bin/env ruby
 # frozen_string_literal: true
@@ -92,8 +92,21 @@ cat << 'EOL' > modules/basic_plugin/tasks/resolve_reference.rb
 require 'json'
 require 'yaml'
 
-# Load inventory.yaml
-yaml_data = """
+# load STDIN and 'magic' variables like '_boltdir'
+input = JSON.parse(STDIN.read)
+inventory_file = File.join(input['_boltdir'], 'modules', 'basic_plugin', 'tasks', 'inventory.yaml')
+
+# Load inventory from YAML file
+yaml_data = File.read(inventory_file)
+hash = YAML.load(yaml_data)
+
+# wrap in 'value' key as expected by Bolt plugins
+result = { 'value' => hash }
+puts result.to_json
+EOL
+
+# third, the raw inventory yaml
+cat << 'EOL' > modules/basic_plugin/tasks/inventory.yaml
 ---
 config:
   transport: ssh
@@ -107,32 +120,37 @@ config:
     user: root
     port: 32222
 targets:
-- name: agent01
-  uri: agent01@orb
-- name: agent02
-  uri: agent02@orb
-- name: agent03
-  uri: agent03@orb
-- name: compiler01
-  uri: compiler01@orb
-- name: compiler02
-  uri: compiler02@orb
-"""
-
-# convert YAML to a Ruby hash
-hash = YAML.load(yaml_data)
-
-# wrap in 'value' key as expected by Bolt pluginis
-result = { 'value' => hash }
-puts result.to_json
+  - name: agent01
+    uri: agent01@orb
+  - name: agent02
+    uri: agent02@orb
+  - name: agent03
+    uri: agent03@orb
+  - name: compiler01
+    uri: compiler01@orb
+  - name: compiler02
+    uri: compiler02@orb
+groups:
+  - name: agent
+    facts:
+      role: agent
+    targets:
+      - agent01
+      - agent02
+      - agent03
+  - name: compiler
+    facts:
+      role: compiler
+    targets:
+      - compiler01
+      - compiler02
 EOL
 ```
-
-Validate the new plugin
 
 ```bash
 bolt inventory show
 bolt command run "hostname" --targets=all
+bolt command run "hostname" --targets=agent
 ```
 
 ## Appendix
@@ -140,58 +158,6 @@ bolt command run "hostname" --targets=all
 ### Basic Use Output
 
 ```bash
-  dump git:(development) mkdir my_plugin
-cd my_plugin
-
-➜  my_plugin git:(development) cat << 'EOL' > bolt-project.yaml
----
-name: usage
-modules: []
-EOL
-
-
-➜  my_plugin git:(development) bolt command run "hostname" --targets=localhost
-Started on localhost...
-Finished on localhost:
-  EMEA-Didrichsen
-Successful on 1 target: localhost
-Ran on 1 target in 0.02 sec
-
-
-➜  my_plugin git:(development) cat << 'EOL' > inventory.yaml
-version: 2
-_plugin: basic_plugin
-EOL
-
-
-➜  my_plugin git:(development) bolt inventory show
-Unknown plugin: 'basic_plugin'
-
-
-
-➜  my_plugin git:(development) mkdir -p modules/basic_plugin
-➜  my_plugin git:(development) cat << 'EOL' > modules/basic_plugin/bolt_plugin.json
-{
-  "name": "basic_plugin",
-  "version": "0.1.0",
-  "description": "A Bolt dynamic inventory plugin for Orbstack VMs",
-  "tasks": {
-    "resolve_reference": "tasks/resolve_reference.rb"
-  }
-}
-EOL
-➜  my_plugin git:(development) mkdir -p modules/basic_plugin/tasks
-
-
-➜  my_plugin git:(development) cat << 'EOL' > modules/basic_plugin/tasks/resolve_reference.json
-{
-  "description": "Resolve targets for Orbstack inventory",
-  "input_method": "stdin",
-  "parameters": {}
-}
-EOL
-...
-...
 ➜  my_plugin git:(development) bolt inventory show
 Targets
   agent01
