@@ -9,6 +9,7 @@ The following shows how to create a bare-bones bolt inventory plugin with only 5
 * `modules/basic_plugin/bolt-plugin.json​`
 * `modules/basic_plugin/tasks/resolve_reference.json​`
 * `modules/basic_plugin/tasks/resolve_reference.rb`
+* `modules/basic_plugin/tasks/inventory.yaml`
 
 ## Pre-requisites
 
@@ -69,7 +70,8 @@ EOL
 Create the `resolve_reference` task required by the plugin.  In other words,
 
 * create the `modules/basic_plugin/tasks/resolve_reference.json​` task metadata.
-* create the `modules/basic_plugin/tasks/resolve_reference.rb` with hardcoded bolt inventory yaml for simplicity.
+* create the `modules/basic_plugin/tasks/resolve_reference.rb` that loads the following hardcoded inventory.yaml
+* create the `modules/basic_plugin/tasks/inventory.yaml`
 
 ```bash
 # create the 'resolve_reference' task
@@ -146,6 +148,8 @@ groups:
       - compiler02
 EOL
 ```
+
+Verify the plugin is operational:
 
 ```bash
 bolt inventory show
