@@ -13,7 +13,9 @@ For more information see [How to create a basic dynamic inventory plugin](./how_
 
 First, refer to the [Environment Setup Guide](how_to_setup_environment.md) and then configure [orbstack](https://docs.orbstack.dev) and [VMPooler](https://vmpooler.com/).
 
-Finally, include the `bolt_dynamic_inventory` module in your `bolt-project.yaml` and install it:
+## Usage
+
+First, include the `bolt_dynamic_inventory` module in your `bolt-project.yaml` and install it:
 
 ```bash
 # create a bolt-project.yaml that loads the 'bolt_dynamic_inventory' as a bolt plugin
@@ -29,7 +31,7 @@ EOL
 bolt module install
 ```
 
-## Usage
+Then create an inventory file according to the following sections.
 
 ### Orbstack Provider (Default)
 
@@ -69,7 +71,7 @@ bolt inventory show --targets=compiler
 
 ### VMPooler Provider
 
-The following will dynamically show all orbstack VMs.  For the vmpooler provider, two groups get created by default: "windows" and "linux".
+The following will dynamically show all vmpooler VMs and in addition create 2 default groups: "windows" and "linux".
 
 ```bash
 # create a basic bolt inventory file that loads the plugin
@@ -79,7 +81,7 @@ _plugin: bolt_dynamic_inventory
 provider: vmpooler
 EOL
 
-# output the inventory of orbstack VMs
+# output the inventory of vmpooler VMs
 bolt inventory show --targets=all
 bolt inventory show --targets=windows
 bolt inventory show --targets=linux

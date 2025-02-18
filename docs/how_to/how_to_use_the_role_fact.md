@@ -2,7 +2,9 @@
 
 ## Description
 
-This document illustrates one useful way that the `role` fact, which is included in the dynamically generated bolt inventory.
+This document shows a simple use-case for the `role` fact, which is included in the dynamically generated bolt inventory.  One advantage of this `role` fact is that bolt can use it on first execution **before** any facts have been collected by puppet on any of the targets.
+
+The following example configures the `puppetlabs-motd` module using this fact.
 
 ## Pre-requisites
 
@@ -10,9 +12,7 @@ First, refer to the [Environment Setup Guide](how_to_setup_environment.md) and t
 
 ## Usage
 
-### Configure a bolt project that includes puppetlabs-motd
-
-Now:
+First, configure a bolt project that includes not only the `bolt_dynamic_inventory` but also the `puppetlabs-motd`:
 
 ```bash
 # create a bolt-project.yaml that loads the 'bolt_dynamic_inventory' and 'puppetlabs-motd' modules
@@ -27,7 +27,11 @@ EOL
 
 # install the modules
 /opt/puppetlabs/bin/bolt module install
+```
 
+Second, create a bolt `inventory.yaml`:
+
+```bash
 # configure dynamic groups 'agent' and 'compiler', which will also configure the 'facts.role` for each group
 cat << 'EOL' > inventory.yaml
 version: 2
@@ -41,9 +45,7 @@ group_patterns:
 EOL
 ```
 
-## Create a plan that exercises the new 'role' fact
-
-Run the `class { 'motd': ... }` against will add a new `/etc/motd` containing the `$facts.role` for each target
+Third, create a plan that exercises the new `$facts.role` for each target
 
 ```bash
 # create a new `usage::sayhello` plan
@@ -60,7 +62,11 @@ plan usage::sayhello (
   }
 }
 EOL
+```
 
+Finally, configure the targets and verify:
+
+```bash
 # run the plan
 /opt/puppetlabs/bin/bolt plan run usage::sayhello --targets=all --verbose
 
@@ -68,13 +74,13 @@ EOL
 /opt/puppetlabs/bin/bolt command run "cat /etc/motd" --targets=all --verbose
 ```
 
-Note that one advantags of having this `role` fact is that bolt does not rely on puppet to collect facts on all targets.  In other words, bolt can switch its workflow based on this fact on first execution.
-
 See sample output in the [appendix](#sample-output).
 
 ## Appendix
 
 ### Sample output
+
+* run the plan injecting the `role` fact:
 
 ```bash
 # run the plan injecting the 'role' fact
@@ -108,7 +114,11 @@ Finished: apply catalog with 0 failures in 11.18 sec
 Finished: plan usage::sayhello in 29.5 sec
 Plan completed successfully with no result
 ➜  motd git:(development) ✗ 
+```
 
+* verify the expected `/etc/motd` content:
+
+```bash
 # verify the expected content
 ➜  motd git:(development) ✗ /opt/puppetlabs/bin/bolt command run "cat /etc/motd" --targets=all --verbose
 Started on agent01...
