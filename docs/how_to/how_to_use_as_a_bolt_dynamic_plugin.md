@@ -2,10 +2,7 @@
 
 ## Description
 
-The following shows how to use the [bolt_dynamic_inventory](https://github.com/gavindidrichsen/bolt_dynamic_inventory) as a [bolt dynamic inventory plugin](https://www.puppet.com/docs/bolt/latest/writing_plugins.html#reference-plugins). The plugin supports two providers:
-
-* `orbstack` for Orbstack VMs, which is the default
-* `vmpooler` for VMPooler VMs
+The following shows how to use the [bolt_dynamic_inventory](https://github.com/gavindidrichsen/bolt_dynamic_inventory) as a [bolt dynamic inventory plugin](https://www.puppet.com/docs/bolt/latest/writing_plugins.html#reference-plugins) for multiple providers, including orbstack and vmpooler.
 
 For more information see [How to create a basic dynamic inventory plugin](./how_to_create_a_basic_bolt_inventory_plugin.md).
 
