@@ -2,7 +2,7 @@
 
 ## Description
 
-The following shows how to create a bare-bones bolt inventory plugin with only 5 files:
+The following shows how to create a bare-bones bolt inventory plugin with only 6 files:
 
 * `bolt-project.yaml​`
 * `inventory.yaml​`

@@ -8,6 +8,8 @@ The following shows how to use the [bolt_dynamic_inventory](https://github.com/g
 
 Refer to the [Environment Setup Guide](how_to_setup_environment.md) and then configure [direnv](https://direnv.net), [rbenv](https://github.com/rbenv/rbenv), ruby, [orbstack](https://docs.orbstack.dev), and [vmpooler](https://github.com/puppetlabs/vmpooler/tree/main).
 
+If you are going to be using the vmpooler provider, you will need to also follow [How to setup windows credentials for vmpooler](how_to_setup_windows_credentials_for_vmpooler.md)
+
 ## Usage
 
 First, setup your `Gemfile` to pull in the `bolt_dynamic_inventory` gem:
