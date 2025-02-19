@@ -10,6 +10,8 @@ For more information see [How to create a basic dynamic inventory plugin](./how_
 
 First, refer to the [Environment Setup Guide](how_to_setup_environment.md) and then configure [orbstack](https://docs.orbstack.dev) and [VMPooler](https://vmpooler.com/).
 
+If you are going to be using the vmpooler provider, you will need to also follow [How to setup windows credentials for vmpooler](how_to_setup_windows_credentials_for_vmpooler.md)
+
 ## Usage
 
 First, include the `bolt_dynamic_inventory` module in your `bolt-project.yaml` and install it:
