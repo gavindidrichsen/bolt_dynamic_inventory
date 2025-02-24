@@ -22,7 +22,7 @@ Unless this credentials file is created an configured with valid credentials, bo
 
 ## Usage
 
-Export the following environment variables making sure to replace `<WINDOWS_PASSWORD>` and `<WINDOWS_IP>`:
+Export the following environment variables making sure to replace `<WINDOWS_PASSWORD>`:
 
 ```bash
 # export the actual windows password
