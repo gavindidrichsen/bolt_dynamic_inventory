@@ -31,24 +31,19 @@ bundle install
 
 Then generate an inventory according to the following sections.
 
-### Generate orbstack inventory
+### Generate inventories
 
 ```bash
-# List all Orbstack VMs
-bundle exec binv --provider=orbstack
+# List orbstack VMs
+bundle exec binv --provider=orbstack                                            # list all VMs
+bundle exec binv --provider=orbstack --groups "agent:^agent,compiler:^compiler" # add custom regex groups
 
-# Create groups based on regex patterns
-bundle exec binv --provider=orbstack --groups "agent:^agent,compiler:^compiler"
-```
+# List vmpooler VMs
+bundle exec binv --provider=vmpooler                                            # list all VMs grouping windows and linux
+bundle exec binv --provider=vmpooler --groups "agent:tender|normal"             # add custom regex groups
 
-### Generate vmpooler inventory
-
-```bash
-# List all VMPooler VMs (automatically groups into windows/linux)
-bundle exec binv --provider=vmpooler
-
-# Create additional groups based on regex patterns
-bundle exec binv --provider=vmpooler --groups "agent:tender|normal"
+# verify the inventory dynamically
+bolt inventory show --inventoryfile=<(bundle exec binv --provider=orbstack)
 ```
 
 ## Appendix
