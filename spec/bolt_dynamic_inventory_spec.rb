@@ -101,22 +101,68 @@ RSpec.describe BoltDynamicInventory do
       ]
     end
 
-    before do
-      allow_any_instance_of(described_class).to receive(:fetch_vmpooler_vms).and_return(mock_vms)
-    end
+    context 'when no VMs are available' do
+      before do
+        allow_any_instance_of(described_class).to receive(:fetch_vmpooler_vms).and_return([])
+      end
 
-    context 'basic inventory without group_patterns' do
-      let(:inventory) { described_class.new }
-
-      it 'generates inventory with targets and base groups' do
+      it 'generates inventory with empty targets and base groups' do
+        inventory = described_class.new
         result = inventory.generate
 
+        expect(result['targets']).to eq([])
+
+        # Check windows group is empty but configured
+        windows_group = result['groups'].find { |g| g['name'] == 'windows' }
+        expect(windows_group['targets']).to eq([])
+        expect(windows_group['facts']).to eq('role' => 'windows')
+        expect(windows_group['config']).to include(
+          '_plugin' => 'yaml',
+          'filepath' => '~/.secrets/bolt/windows/credentials.yaml'
+        )
+
+        # Check linux group is empty but configured
+        linux_group = result['groups'].find { |g| g['name'] == 'linux' }
+        expect(linux_group['targets']).to eq([])
+        expect(linux_group['facts']).to eq('role' => 'linux')
+        expect(linux_group['config']['ssh']).to include(
+          'native-ssh' => true,
+          'load-config' => true,
+          'login-shell' => 'bash'
+        )
+      end
+
+      it 'generates inventory with empty regex-based groups' do
+        inventory = described_class.new(
+          'group_patterns' => [
+            { 'group' => 'agent', 'pattern' => 'tender|normal' }
+          ]
+        )
+        result = inventory.generate
+
+        # Check regex-based group is empty
+        agent_group = result['groups'].find { |g| g['name'] == 'agent' }
+        expect(agent_group['targets']).to eq([])
+        expect(agent_group['facts']).to eq('role' => 'agent')
+      end
+    end
+
+    describe 'with available VMs' do
+      before do
+        allow_any_instance_of(described_class).to receive(:fetch_vmpooler_vms).and_return(mock_vms)
+      end
+
+      let(:inventory) { described_class.new }
+      let(:result) { inventory.generate }
+
+      it 'generates correct targets' do
         expect(result['targets'].length).to eq(3)
         expect(result['targets'].map { |t| t['name'] }).to contain_exactly(
           'onetime-algebra', 'tender-punditry', 'normal-meddling'
         )
+      end
 
-        # Check windows group
+      it 'configures windows group correctly' do
         windows_group = result['groups'].find { |g| g['name'] == 'windows' }
         expect(windows_group['targets']).to contain_exactly('onetime-algebra')
         expect(windows_group['facts']).to eq('role' => 'windows')
@@ -124,8 +170,9 @@ RSpec.describe BoltDynamicInventory do
           '_plugin' => 'yaml',
           'filepath' => '~/.secrets/bolt/windows/credentials.yaml'
         )
+      end
 
-        # Check linux group
+      it 'configures linux group correctly' do
         linux_group = result['groups'].find { |g| g['name'] == 'linux' }
         expect(linux_group['targets']).to contain_exactly('tender-punditry', 'normal-meddling')
         expect(linux_group['facts']).to eq('role' => 'linux')
@@ -135,18 +182,13 @@ RSpec.describe BoltDynamicInventory do
           'login-shell' => 'bash'
         )
       end
-    end
 
-    context 'with group patterns' do
-      let(:inventory) do
-        described_class.new(
+      it 'generates inventory with both base and regex-based groups when patterns are provided' do
+        inventory = described_class.new(
           'group_patterns' => [
             { 'group' => 'agent', 'pattern' => 'tender|normal' }
           ]
         )
-      end
-
-      it 'generates inventory with both base and regex-based groups' do
         result = inventory.generate
 
         # Base groups should still exist

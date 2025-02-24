@@ -10,6 +10,24 @@ module BoltDynamicInventory
       # Class for generating Bolt inventory from VMPooler VMs
       # Handles VM discovery and inventory file generation with group pattern support
       class Inventory
+        WINDOWS_CONFIG = {
+          '_plugin' => 'yaml',
+          'filepath' => '~/.secrets/bolt/windows/credentials.yaml'
+        }.freeze
+
+        LINUX_CONFIG = {
+          'transport' => 'ssh',
+          'ssh' => {
+            'native-ssh' => true,
+            'load-config' => true,
+            'login-shell' => 'bash',
+            'tty' => false,
+            'host-key-check' => false,
+            'run-as' => 'root',
+            'user' => 'root'
+          }
+        }.freeze
+
         def initialize(config = {})
           @group_patterns = parse_group_patterns(config['group_patterns'])
         end
@@ -20,13 +38,19 @@ module BoltDynamicInventory
           generate_inventory(vms)
         end
 
+        private
+
         # Fetch VMPooler VM details
         def fetch_vmpooler_vms
           output = `bundle exec floaty list --active --json`
           raise 'Failed to get VM list from floaty' unless $CHILD_STATUS.success?
 
-          # Parse JSON output
+          # Return empty array if output is empty (no VMs)
+          return [] if output.strip.empty?
+
+          # Parse JSON output and return empty array if data is nil or empty
           data = JSON.parse(output)
+          return [] if data.nil? || data.empty?
 
           # Extract VMs that are in 'filled' state and have allocated resources
           data.values.select { |job| job['state'] == 'filled' }.flat_map do |job|
@@ -41,64 +65,67 @@ module BoltDynamicInventory
 
         # Generate the Bolt inventory structure
         def generate_inventory(vms)
-          # Extract targets temporarily keeping the 'type' for grouping
-          targets_with_type = vms.map do |vm|
+          targets_with_type = extract_targets_with_type(vms)
+          target_names = targets_with_type.map { |t| t['name'] }
+          windows_targets, linux_targets = partition_targets_by_type(targets_with_type)
+          targets = targets_with_type.map { |t| t.except('type') }
+
+          {
+            'targets' => targets,
+            'groups' => base_groups(windows_targets, linux_targets) + regex_groups(target_names)
+          }
+        end
+
+        def extract_targets_with_type(vms)
+          vms.map do |vm|
             {
               'name' => vm['hostname'].split('.').first,
               'uri' => vm['hostname'],
               'type' => vm['type']
             }
           end
+        end
 
-          # group the targets by type, in other worder, either windows or linux
-          windows_targets = targets_with_type.select { |t| t['type'].include?('win') }.map { |t| t['name'] }
-          linux_targets = targets_with_type.reject { |t| t['type'].include?('win') }.map { |t| t['name'] }
+        def partition_targets_by_type(targets_with_type)
+          windows = targets_with_type.select { |t| t['type'].include?('win') }.map { |t| t['name'] }
+          linux = targets_with_type.reject { |t| t['type'].include?('win') }.map { |t| t['name'] }
+          [windows, linux]
+        end
 
-          # now remove the 'type' field; otherwise bolt will complain
-          targets = targets_with_type.map { |t| t.except('type') }
-
-          # Start with base groups
-          base_groups = [
-            {
-              'name' => 'windows',
-              'config' => {
-                '_plugin' => 'yaml',
-                'filepath' => '~/.secrets/bolt/windows/credentials.yaml'
-              },
-              'facts' => { 'role' => 'windows' },
-              'targets' => windows_targets
-            },
-            {
-              'name' => 'linux',
-              'config' => {
-                'transport' => 'ssh',
-                'ssh' => {
-                  'native-ssh' => true,
-                  'load-config' => true,
-                  'login-shell' => 'bash',
-                  'tty' => false,
-                  'host-key-check' => false,
-                  'run-as' => 'root',
-                  'user' => 'root'
-                }
-              },
-              'facts' => { 'role' => 'linux' },
-              'targets' => linux_targets
-            }
+        def base_groups(windows_targets, linux_targets)
+          [
+            windows_group(windows_targets),
+            linux_group(linux_targets)
           ]
+        end
 
-          # Generate regex-based groups
-          target_names = targets_with_type.map { |t| t['name'] }
-          regex_groups = generate_groups(target_names)
-
-          # Construct inventory with both base and regex groups
+        def windows_group(targets)
           {
-            'targets' => targets,
-            'groups' => base_groups + regex_groups
+            'name' => 'windows',
+            'config' => WINDOWS_CONFIG,
+            'facts' => { 'role' => 'windows' },
+            'targets' => targets
           }
         end
 
-        private
+        def linux_group(targets)
+          {
+            'name' => 'linux',
+            'config' => LINUX_CONFIG,
+            'facts' => { 'role' => 'linux' },
+            'targets' => targets
+          }
+        end
+
+        def regex_groups(target_names)
+          @group_patterns.map do |pattern|
+            {
+              'name' => pattern[:group],
+              'targets' => target_names.grep(pattern[:regex]),
+              'facts' => { 'role' => pattern[:group] }
+            }
+          end
+        end
 
         def parse_group_patterns(patterns)
           return [] unless patterns
@@ -107,35 +134,6 @@ module BoltDynamicInventory
             {
               regex: Regexp.new(pattern['pattern'] || pattern['regex']),
               group: pattern['group']
-            }
-          end
-        end
-
-        def generate_targets(vms)
-          vms.map do |vm|
-            {
-              'uri' => vm['name'],
-              'name' => vm['name'],
-              'config' => {
-                'ssh' => {
-                  'host' => vm['hostname'] || vm['name']
-                }
-              }
-            }
-          end
-        end
-
-        def generate_groups(target_names)
-          return [] if @group_patterns.empty?
-
-          @group_patterns.each_with_object([]) do |pattern, groups|
-            matching_targets = target_names.grep(pattern[:regex])
-            next if matching_targets.empty?
-
-            groups << {
-              'name' => pattern[:group],
-              'facts' => { 'role' => pattern[:group] },
-              'targets' => matching_targets
             }
           end
         end
