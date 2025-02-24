@@ -13,6 +13,7 @@
 * [How to create and remove orbstack VMs from the command-line](how_to/how_to_create_and_remove_orbstack_vms_from_the_command_line.md)
 * [How to setup the environment](how_to/how_to_setup_the_environment.md)
 * [How to setup windows credentials for vmpooler](how_to/how_to_setup_windows_credentials_for_vmpooler.md)
+* [How to Test VMPooler Inventory Features](how_to/how_to_test_vmpooler_inventory_features.md)
 * [How to use as a bolt dynamic plugin](how_to/how_to_use_as_a_bolt_dynamic_plugin.md)
 * [How to use as a gem](how_to/how_to_use_as_a_gem.md)
 * [How to use the `role` fact](how_to/how_to_use_the_role_fact.md)
