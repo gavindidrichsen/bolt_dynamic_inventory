@@ -42,8 +42,9 @@ module BoltDynamicInventory
 
         # Fetch VMPooler VM details
         def fetch_vmpooler_vms
-          output = `bundle exec floaty list --active --json`
-          raise 'Failed to get VM list from floaty' unless $CHILD_STATUS.success?
+          require 'open3'
+          output, status = Open3.capture2('floaty list --active --json')
+          raise 'Failed to get VM list from floaty' unless status.success?
 
           # Return empty array if output is empty (no VMs)
           return [] if output.strip.empty?
@@ -52,8 +53,8 @@ module BoltDynamicInventory
           data = JSON.parse(output)
           return [] if data.nil? || data.empty?
 
-          # Extract VMs that are in 'filled' state and have allocated resources
-          data.values.select { |job| job['state'] == 'filled' }.flat_map do |job|
+          # Extract VMs that are in 'filled' or 'allocated' state and have allocated resources
+          data.values.select { |job| %w[filled allocated].include?(job['state']) }.flat_map do |job|
             job['allocated_resources'].map do |resource|
               {
                 'hostname' => resource['hostname'],
