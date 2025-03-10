@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'bolt_dynamic_inventory'
+require 'open3'
 
 RSpec.describe BoltDynamicInventory do
   describe '.new' do
@@ -93,6 +94,24 @@ RSpec.describe BoltDynamicInventory do
   end
 
   describe BoltDynamicInventory::Provider::Vmpooler::Inventory do
+    let(:mock_vmpooler_json) do
+      {
+        'job-1' => {
+          'state' => 'filled',
+          'allocated_resources' => [
+            { 'hostname' => 'onetime-algebra.delivery.puppetlabs.net', 'type' => 'win-2019-x86_64' }
+          ]
+        },
+        'job-2' => {
+          'state' => 'allocated',
+          'allocated_resources' => [
+            { 'hostname' => 'tender-punditry.delivery.puppetlabs.net', 'type' => 'ubuntu-2004-x86_64' },
+            { 'hostname' => 'normal-meddling.delivery.puppetlabs.net', 'type' => 'ubuntu-2004-x86_64' }
+          ]
+        }
+      }.to_json
+    end
+
     let(:mock_vms) do
       [
         { 'hostname' => 'onetime-algebra.delivery.puppetlabs.net', 'type' => 'win-2019-x86_64' },
@@ -103,7 +122,9 @@ RSpec.describe BoltDynamicInventory do
 
     context 'when no VMs are available' do
       before do
-        allow_any_instance_of(described_class).to receive(:fetch_vmpooler_vms).and_return([])
+        allow(Open3).to receive(:capture2)
+          .with('floaty list --active --json')
+          .and_return(['', instance_double(Process::Status, success?: true)])
       end
 
       it 'generates inventory with empty targets and base groups' do
@@ -149,7 +170,9 @@ RSpec.describe BoltDynamicInventory do
 
     describe 'with available VMs' do
       before do
-        allow_any_instance_of(described_class).to receive(:fetch_vmpooler_vms).and_return(mock_vms)
+        allow(Open3).to receive(:capture2)
+          .with('floaty list --active --json')
+          .and_return([mock_vmpooler_json, instance_double(Process::Status, success?: true)])
       end
 
       let(:inventory) { described_class.new }
