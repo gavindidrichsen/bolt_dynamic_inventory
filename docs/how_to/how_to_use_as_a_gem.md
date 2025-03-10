@@ -43,7 +43,21 @@ bundle exec binv --provider=vmpooler                                            
 bundle exec binv --provider=vmpooler --groups "agent:tender|normal"             # add custom regex groups
 
 # verify the inventory dynamically
-bolt inventory show --inventoryfile=<(bundle exec binv --provider=orbstack)
+bolt --inventoryfile=<(bundle exec binv --provider=orbstack) inventory show
+
+# verify a simple command across your VMs, e.g., for orbstack
+bolt command run "hostname" --inventoryfile=<(binv) --targets=all
+```
+
+**COOL TIP**: Create a simple dynamic inventory with an alias, e.g.,
+
+```bash
+# create an alias that always runs the inventory
+alias boldv='bolt --inventoryfile=<(binv --provider=vmpooler)'
+alias boldo='bolt --inventoryfile=<(binv --provider=orbstack)'
+
+# run any bolt command with bold...
+boldo command run "hostname" --targets=all
 ```
 
 ## Appendix
