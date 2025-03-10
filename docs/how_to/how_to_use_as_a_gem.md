@@ -45,11 +45,13 @@ bundle exec binv --provider=vmpooler --groups "agent:tender|normal"             
 # verify the inventory dynamically
 bolt --inventoryfile=<(bundle exec binv --provider=orbstack) inventory show
 
-# verify a simple command across your VMs, e.g., for orbstack
-bolt command run "hostname" --inventoryfile=<(binv) --targets=all
+# verify a simple command across your VMs, e.g.,
+bolt command run "hostname" --inventoryfile=<(bundle exec binv --provider=orbstack) --targets=all
 ```
 
 **COOL TIP**: Create a simple dynamic inventory with an alias, e.g.,
+
+If you've added the `bundle_dynamic_inventory` to your system viat a `gem install bundle_dynamic_inventory...`, then your should be able to use the `binv` command anywhere on your system.  For example, I created the following aliases so that I could quickly run bolt commands against either vmpooler or orbstack:
 
 ```bash
 # create an alias that always runs the inventory
