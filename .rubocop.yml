@@ -11,6 +11,12 @@ require:
   - rubocop-rake
   - rubocop-rspec
 
+plugins:
+  - rubocop-capybara
+
 RSpec/MultipleExpectations:
   Enabled: true
   Max: 10
+
+Capybara/RSpec/PredicateMatcher:
+  Enabled: false

@@ -12,6 +12,8 @@ If you are going to be using the vmpooler provider, you will need to also follow
 
 ## Usage
 
+If you wish to install this gem system-wide, then see [Install system wide as a gem](#install-system-wide-as-a-gem); otherwise continue on to install with bundler.
+
 First, setup your `Gemfile` to pull in the `bolt_dynamic_inventory` gem:
 
 ```bash
@@ -63,6 +65,17 @@ boldo command run "hostname" --targets=all
 ```
 
 ## Appendix
+
+### Install system wide as a gem
+
+```bash
+git clone https://github.com/gavindidrichsen/bolt_dynamic_inventory.git
+cd bolt_dynamic_inventory
+gem build bolt_dynamic_inventory.gemspec
+gem install *.gem
+rbenv rehash
+rbenv which binv
+```
 
 ### Sample output
 
