@@ -138,8 +138,15 @@ RSpec.describe BoltDynamicInventory do
         expect(windows_group['targets']).to eq([])
         expect(windows_group['facts']).to eq('role' => 'windows')
         expect(windows_group['config']).to include(
-          '_plugin' => 'yaml',
-          'filepath' => '~/.secrets/bolt/windows/credentials.yaml'
+          'transport' => 'winrm',
+          'winrm' => {
+            'password' => {
+              '_plugin' => 'env_var',
+              'var' => 'VMPOOLER_WINDOWS_PASSWORD'
+            },
+            'ssl' => false,
+            'user' => 'Administrator'
+          }
         )
 
         # Check linux group is empty but configured
@@ -190,8 +197,15 @@ RSpec.describe BoltDynamicInventory do
         expect(windows_group['targets']).to contain_exactly('onetime-algebra')
         expect(windows_group['facts']).to eq('role' => 'windows')
         expect(windows_group['config']).to include(
-          '_plugin' => 'yaml',
-          'filepath' => '~/.secrets/bolt/windows/credentials.yaml'
+          'transport' => 'winrm',
+          'winrm' => {
+            'password' => {
+              '_plugin' => 'env_var',
+              'var' => 'VMPOOLER_WINDOWS_PASSWORD'
+            },
+            'ssl' => false,
+            'user' => 'Administrator'
+          }
         )
       end
 
