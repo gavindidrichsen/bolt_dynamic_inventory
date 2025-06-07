@@ -23,6 +23,11 @@ OptionParser.new do |opts|
           'Provider to use (orbstack or vmpooler)') do |provider|
     options[:provider] = provider
   end
+
+  opts.on('-v', '--version', 'Show version information') do
+    puts "binv #{BoltDynamicInventory::VERSION}"
+    exit
+  end
 end.parse!
 
 # Create an instance of your inventory class with the group patterns
