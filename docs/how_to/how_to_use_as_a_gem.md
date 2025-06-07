@@ -168,10 +168,13 @@ targets:
 groups:
 - name: windows
   config:
-    transport: ssh
-    ssh:
-      _plugin: yaml
-      filepath: "~/.secrets/bolt/windows/credentials.yaml"
+    transport: winrm
+    winrm:
+      user: Administrator
+      password:
+        _plugin: env_var
+        var: VMPOOLER_WINDOWS_PASSWORD
+      ssl: false
   facts:
     role: windows
   targets:
