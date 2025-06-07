@@ -11,8 +11,15 @@ module BoltDynamicInventory
       # Handles VM discovery and inventory file generation with group pattern support
       class Inventory
         WINDOWS_CONFIG = {
-          '_plugin' => 'yaml',
-          'filepath' => '~/.secrets/bolt/windows/credentials.yaml'
+          'transport' => 'winrm',
+          'winrm' => {
+            'user' => 'Administrator',
+            'password' => {
+              '_plugin' => 'env_var',
+              'var' => 'VMPOOLER_WINDOWS_PASSWORD'
+            },
+            'ssl' => false
+          }
         }.freeze
 
         LINUX_CONFIG = {

@@ -2,78 +2,39 @@
 
 ## Description
 
-This guide explains how to setup the windows credentials file for vmpooler.  You can choose either `ssh` or `winrm`
+This guide explains how to setup Windows credentials for vmpooler using an environment variable.
 
 ## Context
 
-The `bolt_dynamic_inventory` gem (or plugin) will produce an inventory something like that in the [appendix](#sample-vmpoller-bolt-inventory).  Notice in particular that the windows group contains a `config` section that references a "secrets" file `~/.secrets/bolt/windows/credentials.yaml`, e.g,
+For bolt to connect to a vmpooler windows server over `winrm`, the `inventory.yaml` must include configuration similar to the following:
 
 ```yaml
 groups:
 - name: windows
   config:
-    _plugin: yaml
-    filepath: "~/.secrets/bolt/windows/credentials.yaml"
-  facts:
-    role: windows
+    transport: winrm
+    winrm:
+      user: Administrator
+      password:
+        _plugin: env_var
+        var: VMPOOLER_WINDOWS_PASSWORD
+      ssl: false
 ```
 
-Unless this credentials file is created an configured with valid credentials, bolt will not be able to connect to the vmpooler windows machines.
+As long as the `VMPOOLER_WINDOWS_PASSWORD` environment variable is set to a valid password, then bolt will connect to the windows server(s).  For more information, see the sample `inventory.yaml` produced by the `bolt_dynamic_inventory` gem in the [appendix](#sample-vmpoller-bolt-inventory).
 
 ## Usage
 
-Export the following environment variables making sure to replace `<WINDOWS_PASSWORD>`:
+Export the following environment variable, making sure to replace `<WINDOWS_PASSWORD>` with your actual Windows password:
 
 ```bash
-# export the actual windows password
-export WINDOWS_PASSWORD=<WINDOWS_PASSWORD>
+export VMPOOLER_WINDOWS_PASSWORD=<WINDOWS_PASSWORD>
 
-# create SSH config directory for the credential files
-mkdir -p ~/.secrets/bolt/windows
-```
+# output a vmpooler inventory file
+bundle exec binv --provider=vmpooler     
 
-The create the `~/.secrets/bolt/windows/credentials.yaml` to use either `ssh` or `winrm`.
-
-To use `ssh`, then do the following:
-
-```bash
-# create an SSH windows credentials config file
-cat << EOL > ~/.secrets/bolt/windows/credentials.yaml
----
-# See <https://www.puppet.com/docs/bolt/latest/bolt_transports_reference.html#ssh>
-transport: ssh
-ssh:
-  user: Administrator
-  password: ${WINDOWS_PASSWORD}
-  encryption-algorithms: 
-    - aes128-ctr
-    - aes192-ctr
-    - aes256-ctr
-    - aes128-gcm@openssh.com
-    - aes256-gcm@openssh.com
-    - chacha20-poly1305@openssh.com
-  host-key-check: false
-  ssl: false
-EOL
-```
-
-To use `winrm` do the following:
-
-```bash
-cat << EOL > ~/.secrets/bolt/windows/credentials.yaml
----
-# See <https://www.puppet.com/docs/bolt/latest/bolt_transports_reference.html#ssh>
-transport: winrm
-winrm:
-  user: Administrator
-  password: ${WINDOWS_PASSWORD}
-  ssl: false
-EOL
-```
-
-```bash
 # run a simple command via bolt, e.g.,
-/opt/puppetlabs/bin/bolt --verbose command run ipconfig --targets=all
+/opt/puppetlabs/bin/bolt command run ipconfig --verbose --inventoryfile=<(bundle exec binv --provider=vmpooler) --targets=windows
 ```
 
 ## Appendix
@@ -97,8 +58,13 @@ targets:
 groups:
 - name: windows
   config:
-    _plugin: yaml
-    filepath: "~/.secrets/bolt/windows/credentials.yaml"
+    transport: winrm
+    winrm:
+      user: Administrator
+      password:
+        _plugin: env_var
+        var: VMPOOLER_WINDOWS_PASSWORD
+      ssl: false
   facts:
     role: windows
   targets:
