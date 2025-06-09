@@ -44,9 +44,10 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'bundler', '~> 2.4'
   spec.add_development_dependency 'rake', '~> 13.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
-  spec.add_development_dependency 'rubocop', '~> 1.75.3'
+  spec.add_development_dependency 'rubocop', '~> 1.76.1'
   spec.add_development_dependency 'rubocop-capybara', '~> 2.22.1'
-  spec.add_development_dependency 'rubocop-rake', '~> 0.6.0'
-  spec.add_development_dependency 'rubocop-rspec', '~> 2.26.1'
+  spec.add_development_dependency 'rubocop-factory_bot', '~> 2.27.1'
+  spec.add_development_dependency 'rubocop-rake', '~> 0.7.1'
+  spec.add_development_dependency 'rubocop-rspec', '~> 3.6.0'
   spec.metadata['rubygems_mfa_required'] = 'true'
 end
