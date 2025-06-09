@@ -1,22 +1,28 @@
 inherit_from: .rubocop_todo.yml
 
-# inherit_from: .rubocop_todo.yml
-
 AllCops:
   NewCops: enable
   TargetRubyVersion: 3.1
   SuggestExtensions: false
 
-require:
+# Use plugins section for these extensions
+plugins:
+  - rubocop-capybara
+  - rubocop-factory_bot
   - rubocop-rake
   - rubocop-rspec
 
-plugins:
-  - rubocop-capybara
-
+# RSpec configurations
 RSpec/MultipleExpectations:
   Enabled: true
   Max: 10
+  Include:
+    - 'spec/**/*_spec.rb'
 
-Capybara/RSpec/PredicateMatcher:
-  Enabled: false
+# Explicitly define Capybara cops under RSpec namespace
+Capybara:
+  Enabled: true
+
+# Explicitly define FactoryBot cops under RSpec namespace
+FactoryBot:
+  Enabled: true
