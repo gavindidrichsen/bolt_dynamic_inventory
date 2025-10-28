@@ -120,11 +120,70 @@ RSpec.describe BoltDynamicInventory do
       ]
     end
 
+    let(:hostnames) do
+      %w[
+        onetime-algebra.delivery.puppetlabs.net
+        tender-punditry.delivery.puppetlabs.net
+        normal-meddling.delivery.puppetlabs.net
+      ]
+    end
+
+    let(:mock_nmap_output_all_alive) do
+      <<~NMAP
+        Starting Nmap 7.98 ( https://nmap.org ) at 2025-10-28 18:00 +0000
+        Nmap scan report for onetime-algebra.delivery.puppetlabs.net (10.16.121.11)
+        Host is up (0.15s latency).
+
+        PORT   STATE SERVICE
+        22/tcp open  ssh
+
+        Nmap scan report for tender-punditry.delivery.puppetlabs.net (10.16.121.12)
+        Host is up (0.15s latency).
+
+        PORT   STATE SERVICE
+        22/tcp open  ssh
+
+        Nmap scan report for normal-meddling.delivery.puppetlabs.net (10.16.121.13)
+        Host is up (0.15s latency).
+
+        PORT   STATE SERVICE
+        22/tcp open  ssh
+
+        Nmap done: 3 IP addresses (3 hosts up) scanned in 1.34 seconds
+      NMAP
+    end
+
+    let(:mock_nmap_output_partial) do
+      <<~NMAP
+        Starting Nmap 7.98 ( https://nmap.org ) at 2025-10-28 18:00 +0000
+        Nmap scan report for tender-punditry.delivery.puppetlabs.net (10.16.121.12)
+        Host is up (0.15s latency).
+
+        PORT   STATE SERVICE
+        22/tcp open  ssh
+
+        Nmap scan report for normal-meddling.delivery.puppetlabs.net (10.16.121.13)
+        Host is up (0.15s latency).
+
+        PORT   STATE SERVICE
+        22/tcp open  ssh
+
+        Nmap done: 2 IP addresses (2 hosts up) scanned in 1.34 seconds
+      NMAP
+    end
+
+    let(:mock_nmap_stderr) do
+      <<~STDERR
+        Failed to resolve "onetime-algebra.delivery.puppetlabs.net".
+      STDERR
+    end
+
     context 'when no VMs are available' do
       before do
-        allow(Open3).to receive(:capture2)
+        allow(Open3).to receive(:capture3)
           .with('floaty list --active --json')
-          .and_return(['', instance_double(Process::Status, success?: true)])
+          .and_return(['', '', instance_double(Process::Status, success?: true)])
+        # No need to mock nmap since no VMs means no filtering needed
       end
 
       it 'generates inventory with empty targets and base groups' do
@@ -177,9 +236,12 @@ RSpec.describe BoltDynamicInventory do
 
     describe 'with available VMs' do
       before do
-        allow(Open3).to receive(:capture2)
+        allow(Open3).to receive(:capture3)
           .with('floaty list --active --json')
-          .and_return([mock_vmpooler_json, instance_double(Process::Status, success?: true)])
+          .and_return([mock_vmpooler_json, '', instance_double(Process::Status, success?: true)])
+        allow(Open3).to receive(:capture3)
+          .with('nmap', '-Pn', '-p', '22', *hostnames)
+          .and_return([mock_nmap_output_all_alive, mock_nmap_stderr, instance_double(Process::Status, success?: true)])
       end
 
       let(:inventory) { described_class.new }
@@ -236,6 +298,69 @@ RSpec.describe BoltDynamicInventory do
         agent_group = result['groups'].find { |g| g['name'] == 'agent' }
         expect(agent_group['targets']).to contain_exactly('tender-punditry', 'normal-meddling')
         expect(agent_group['facts']).to eq('role' => 'agent')
+      end
+    end
+
+    describe 'host filtering with nmap' do
+      before do
+        allow(Open3).to receive(:capture3)
+          .with('floaty list --active --json')
+          .and_return([mock_vmpooler_json, '', instance_double(Process::Status, success?: true)])
+      end
+
+      context 'when some hosts are unreachable' do
+        before do
+          allow(Open3).to receive(:capture3)
+            .with('nmap', '-Pn', '-p', '22', *hostnames)
+            .and_return([mock_nmap_output_partial, mock_nmap_stderr, instance_double(Process::Status, success?: true)])
+        end
+
+        it 'filters out unreachable hosts' do
+          inventory = described_class.new
+          result = inventory.generate
+
+          expect(result['targets'].length).to eq(2)
+          expect(result['targets'].map { |t| t['name'] }).to contain_exactly('tender-punditry', 'normal-meddling')
+
+          # Windows group should be empty since onetime-algebra is unreachable
+          windows_group = result['groups'].find { |g| g['name'] == 'windows' }
+          expect(windows_group['targets']).to eq([])
+
+          # Linux group should only contain reachable hosts
+          linux_group = result['groups'].find { |g| g['name'] == 'linux' }
+          expect(linux_group['targets']).to contain_exactly('tender-punditry', 'normal-meddling')
+        end
+      end
+
+      context 'when nmap fails' do
+        before do
+          allow(Open3).to receive(:capture3)
+            .with('nmap', '-Pn', '-p', '22', *hostnames)
+            .and_return(['', 'nmap: command not found',
+                         instance_double(Process::Status, success?: false, exitstatus: 127)])
+        end
+
+        it 'raises an error with details' do
+          inventory = described_class.new
+          expect { inventory.generate }.to raise_error(/nmap failed.*127.*nmap: command not found/)
+        end
+      end
+
+      context 'when all hosts are unreachable' do
+        before do
+          allow(Open3).to receive(:capture3)
+            .with('nmap', '-Pn', '-p', '22', *hostnames)
+            .and_return(['', mock_nmap_stderr, instance_double(Process::Status, success?: true)])
+        end
+
+        it 'generates inventory with empty targets' do
+          inventory = described_class.new
+          result = inventory.generate
+
+          expect(result['targets']).to eq([])
+          expect(result['groups'].find { |g| g['name'] == 'windows' }['targets']).to eq([])
+          expect(result['groups'].find { |g| g['name'] == 'linux' }['targets']).to eq([])
+        end
       end
     end
   end

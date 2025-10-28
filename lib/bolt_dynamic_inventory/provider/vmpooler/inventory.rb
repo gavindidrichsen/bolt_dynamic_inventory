@@ -2,6 +2,7 @@
 
 require 'English'
 require 'json'
+require 'open3'
 require 'yaml'
 
 module BoltDynamicInventory
@@ -42,22 +43,48 @@ module BoltDynamicInventory
         # Generate a Bolt inventory structure from VMPooler VMs
         def generate
           vms = fetch_vmpooler_vms
+          vms = filter_alive_hosts(vms)
           generate_inventory(vms)
         end
 
         private
 
+        def print_and_abort(message, stderr, status)
+          error_msg = "#{message} with exit code #{status.exitstatus}"
+          error_msg += ": #{stderr.strip}" unless stderr.empty?
+          raise error_msg
+        end
+
+        def filter_alive_hosts(vms)
+          return vms if vms.empty?
+
+          hostnames = vms.map { |item| item['hostname'] }
+          # Use -Pn to skip ping and check SSH port 22
+          # This works for both Linux and Windows hosts in modern environments
+          stdout, stderr, status = Open3.capture3('nmap', '-Pn', '-p', '22', *hostnames)
+
+          print_and_abort('nmap failed', stderr, status) unless status.success?
+
+          # Extract hostnames from "Host is up" entries
+          active_hostnames = stdout.lines
+                                   .grep(/^Nmap scan report for/)
+                                   .map { |line| line.match(/^Nmap scan report for (\S+)/)[1] }
+
+          return [] if active_hostnames.empty?
+
+          vms.select { |vm| active_hostnames.include?(vm['hostname']) }
+        end
+
         # Fetch VMPooler VM details
         def fetch_vmpooler_vms
-          require 'open3'
-          output, status = Open3.capture2('floaty list --active --json')
-          raise 'Failed to get VM list from floaty' unless status.success?
+          stdout, stderr, status = Open3.capture3('floaty list --active --json')
+          print_and_abort('Failed to get VM list from floaty', stderr, status) unless status.success?
 
-          # Return empty array if output is empty (no VMs)
-          return [] if output.strip.empty?
+          # Return empty array if stdout is empty (no VMs)
+          return [] if stdout.strip.empty?
 
-          # Parse JSON output and return empty array if data is nil or empty
-          data = JSON.parse(output)
+          # Parse JSON stdout and return empty array if data is nil or empty
+          data = JSON.parse(stdout)
           return [] if data.nil? || data.empty?
 
           # Extract VMs that are in 'filled' or 'allocated' state and have allocated resources
