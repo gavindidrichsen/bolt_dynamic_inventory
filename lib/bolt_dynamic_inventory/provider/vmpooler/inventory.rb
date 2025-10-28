@@ -49,41 +49,41 @@ module BoltDynamicInventory
 
         private
 
-        def print_and_abort(message, stderr, status)
-          error_msg = "#{message}"
+        def print_and_abort(message, stderr, _status)
+          error_msg = message.to_s
           error_msg += ": #{stderr.strip}" unless stderr.empty?
           raise error_msg
         end
 
         def filter_alive_hosts(vms)
-          hostnames = vms.map { |item| item["hostname"] }
+          hostnames = vms.map { |item| item['hostname'] }
           stdout, stderr, status = Open3.capture3('nmap', '-sn', *hostnames)
-          
-          print_and_abort("nmap failed", stderr) unless status.success?
+
+          print_and_abort('nmap failed', stderr) unless status.success?
 
           active_hostnames = stdout.lines
-            .grep(/^Nmap scan report for/)
-            .map { |line| line.match(/^Nmap scan report for (\S+)/)[1]}
-          
+                                   .grep(/^Nmap scan report for/)
+                                   .map { |line| line.match(/^Nmap scan report for (\S+)/)[1] }
+
           return [] if active_hostnames.empty?
 
-          vms.select { |vm| active_hostnames.include?(vm["hostname"])}
+          vms.select { |vm| active_hostnames.include?(vm['hostname']) }
         end
 
         # Fetch VMPooler VM details
         def fetch_vmpooler_vms
-          output, sterr, status = Open3.capture3('floaty list --active --json')
-          print_and_abort("Failed to get VM list from floaty", stderr) unless status.success?
+          stdout, stderr, status = Open3.capture3('floaty list --active --json')
+          print_and_abort('Failed to get VM list from floaty', stderr) unless status.success?
 
-          # Return empty array if output is empty (no VMs)
-          return [] if output.strip.empty?
+          # Return empty array if stdout is empty (no VMs)
+          return [] if stdout.strip.empty?
 
-          # Parse JSON output and return empty array if data is nil or empty
-          data = JSON.parse(output)
+          # Parse JSON stdout and return empty array if data is nil or empty
+          data = JSON.parse(stdout)
           return [] if data.nil? || data.empty?
 
           # Extract VMs that are in 'filled' or 'allocated' state and have allocated resources
-          result = data.values.select { |job| %w[filled allocated].include?(job['state']) }.flat_map do |job|
+          data.values.select { |job| %w[filled allocated].include?(job['state']) }.flat_map do |job|
             job['allocated_resources'].map do |resource|
               {
                 'hostname' => resource['hostname'],
@@ -91,8 +91,6 @@ module BoltDynamicInventory
               }
             end
           end
-
-          result
         end
 
         # Generate the Bolt inventory structure
