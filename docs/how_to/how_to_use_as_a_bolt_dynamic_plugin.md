@@ -10,6 +10,8 @@ For more information see [How to create a basic dynamic inventory plugin](./how_
 
 First, refer to the [Environment Setup Guide](how_to_setup_environment.md) and then configure [orbstack](https://docs.orbstack.dev) and [VMPooler](https://vmpooler.com/).
 
+**Important for VMPooler users:** Ensure `nmap` is installed on your system for VM connectivity filtering (see Environment Setup Guide for installation instructions).
+
 If you are going to be using the vmpooler provider, you will need to also follow [How to setup windows credentials for vmpooler](how_to_setup_windows_credentials_for_vmpooler.md)
 
 ## Usage

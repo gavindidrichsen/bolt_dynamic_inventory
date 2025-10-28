@@ -4,7 +4,13 @@
 
 The following shows how to use the [bolt_dynamic_inventory](https://github.com/gavindidrichsen/bolt_dynamic_inventory) as a gem to generate a bolt inventory for multiple providers, including `orbstack` and `vmpooler`.
 
-Then generate an inventory according to the following sections.
+## Prerequisites
+
+For VMPooler provider, ensure `nmap` is installed on your system for VM connectivity filtering:
+
+**macOS:** `brew install nmap`  
+**Ubuntu/Debian:** `sudo apt-get install nmap`  
+**RHEL/CentOS:** `sudo yum install nmap` or `sudo dnf install nmap`
 
 ## Usage
 
@@ -26,7 +32,7 @@ rbenv which binv
 binv                                                                # list all VMs
 binv --groups "agent:^agent,compiler:^compiler"                     # add custom regex groups
 
-# List vmpooler VMs
+# List vmpooler VMs (automatically filters out destroyed/unreachable VMs)
 binv --provider=vmpooler                                            # list all VMs grouping windows and linux
 binv --provider=vmpooler --groups "agent:tender|normal"             # add custom regex groups
 
