@@ -49,17 +49,19 @@ module BoltDynamicInventory
 
         private
 
-        def print_and_abort(message, stderr, _status)
-          error_msg = message.to_s
+        def print_and_abort(message, stderr, status)
+          error_msg = "#{message} with exit code #{status.exitstatus}"
           error_msg += ": #{stderr.strip}" unless stderr.empty?
           raise error_msg
         end
 
         def filter_alive_hosts(vms)
+          return vms if vms.empty?
+
           hostnames = vms.map { |item| item['hostname'] }
           stdout, stderr, status = Open3.capture3('nmap', '-sn', *hostnames)
 
-          print_and_abort('nmap failed', stderr) unless status.success?
+          print_and_abort('nmap failed', stderr, status) unless status.success?
 
           active_hostnames = stdout.lines
                                    .grep(/^Nmap scan report for/)
@@ -73,7 +75,7 @@ module BoltDynamicInventory
         # Fetch VMPooler VM details
         def fetch_vmpooler_vms
           stdout, stderr, status = Open3.capture3('floaty list --active --json')
-          print_and_abort('Failed to get VM list from floaty', stderr) unless status.success?
+          print_and_abort('Failed to get VM list from floaty', stderr, status) unless status.success?
 
           # Return empty array if stdout is empty (no VMs)
           return [] if stdout.strip.empty?
