@@ -7,6 +7,7 @@ This guide shows you how to manually test the VMPooler inventory features to ens
 * Access to VMPooler
 * Bolt installed
 * The bolt_dynamic_inventory module installed
+* `nmap` installed (required for VM connectivity filtering)
 
 ## Test Scenarios
 
@@ -60,6 +61,35 @@ Verify:
 * 'agent' group exists and contains VMs matching the pattern
 * Group facts and configurations are correct
 
+### 4. VM Connectivity Filtering Testing
+
+```bash
+# 1. Create test VMs:
+bundle exec floaty get ubuntu-2004-x86_64
+bundle exec floaty get ubuntu-2004-x86_64
+
+# 2. Note the VM names from the output
+# e.g., "tender-punditry.delivery.puppetlabs.net" and "normal-meddling.delivery.puppetlabs.net"
+
+# 3. Generate inventory (all VMs should be included initially)
+binv generate --provider vmpooler
+
+# 4. Destroy one of the VMs through VMPooler web interface or floaty
+bundle exec floaty delete <one-of-the-hostnames>
+
+# 5. Generate inventory again - destroyed VM should be automatically filtered out
+binv generate --provider vmpooler
+```
+
+Verify:
+
+* Only reachable VMs appear in the inventory
+* Destroyed VMs are automatically excluded from the targets
+* The filtering happens automatically without manual intervention
+* nmap connectivity checks work correctly for both Linux and Windows VMs
+
+**Note:** The connectivity filtering uses `nmap -Pn -p 22` to check SSH port availability, which works for both Linux and Windows VMPooler VMs.
+
 ## Cleanup
 
 After testing, remember to delete your test VMs:
@@ -73,3 +103,8 @@ bundle exec floaty delete <hostname>
 * If inventory generation fails, check VMPooler connectivity
 * Verify VM hostnames in floaty output match expected patterns
 * Check Windows credentials are properly configured if testing Windows VMs
+* **nmap not found error**: Ensure `nmap` is installed on your system (see environment setup guide)
+* **Connectivity filtering issues**:
+  * Verify nmap can reach VMPooler network (test with `nmap -Pn -p 22 <vm-hostname>`)
+  * Check firewall rules if VMs appear unreachable but should be accessible
+  * DNS resolution issues may cause VMs to be filtered out

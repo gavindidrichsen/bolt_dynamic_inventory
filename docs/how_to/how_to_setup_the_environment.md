@@ -20,7 +20,29 @@ For more information on how to do the above from the command-line see [Create an
 
 ### VMPooler Provider
 
-Install and configure `floaty`:
+#### Install nmap (Required for VM connectivity filtering)
+
+**macOS:**
+
+```bash
+brew install nmap
+```
+
+**Ubuntu/Debian:**
+
+```bash
+sudo apt-get install nmap
+```
+
+**RHEL/CentOS:**
+
+```bash
+sudo yum install nmap
+# or on newer versions:
+sudo dnf install nmap
+```
+
+#### Install and configure floaty
 
 ```bash
 gem install floaty
@@ -33,6 +55,8 @@ user: your_username
 token: your_token
 EOL
 ```
+
+#### Configure Windows credentials
 
 Configure Windows credentials for VMPooler by setting the appropriate environment variable:
 
