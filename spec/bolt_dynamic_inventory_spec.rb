@@ -130,16 +130,45 @@ RSpec.describe BoltDynamicInventory do
 
     let(:mock_nmap_output_all_alive) do
       <<~NMAP
+        Starting Nmap 7.98 ( https://nmap.org ) at 2025-10-28 18:00 +0000
         Nmap scan report for onetime-algebra.delivery.puppetlabs.net (10.16.121.11)
+        Host is up (0.15s latency).
+
+        PORT   STATE SERVICE
+        22/tcp open  ssh
+
         Nmap scan report for tender-punditry.delivery.puppetlabs.net (10.16.121.12)
+        Host is up (0.15s latency).
+
+        PORT   STATE SERVICE
+        22/tcp open  ssh
+
         Nmap scan report for normal-meddling.delivery.puppetlabs.net (10.16.121.13)
+        Host is up (0.15s latency).
+
+        PORT   STATE SERVICE
+        22/tcp open  ssh
+
+        Nmap done: 3 IP addresses (3 hosts up) scanned in 1.34 seconds
       NMAP
     end
 
     let(:mock_nmap_output_partial) do
       <<~NMAP
+        Starting Nmap 7.98 ( https://nmap.org ) at 2025-10-28 18:00 +0000
         Nmap scan report for tender-punditry.delivery.puppetlabs.net (10.16.121.12)
+        Host is up (0.15s latency).
+
+        PORT   STATE SERVICE
+        22/tcp open  ssh
+
         Nmap scan report for normal-meddling.delivery.puppetlabs.net (10.16.121.13)
+        Host is up (0.15s latency).
+
+        PORT   STATE SERVICE
+        22/tcp open  ssh
+
+        Nmap done: 2 IP addresses (2 hosts up) scanned in 1.34 seconds
       NMAP
     end
 
@@ -211,7 +240,7 @@ RSpec.describe BoltDynamicInventory do
           .with('floaty list --active --json')
           .and_return([mock_vmpooler_json, '', instance_double(Process::Status, success?: true)])
         allow(Open3).to receive(:capture3)
-          .with('nmap', '-sn', *hostnames)
+          .with('nmap', '-Pn', '-p', '22', *hostnames)
           .and_return([mock_nmap_output_all_alive, mock_nmap_stderr, instance_double(Process::Status, success?: true)])
       end
 
@@ -282,7 +311,7 @@ RSpec.describe BoltDynamicInventory do
       context 'when some hosts are unreachable' do
         before do
           allow(Open3).to receive(:capture3)
-            .with('nmap', '-sn', *hostnames)
+            .with('nmap', '-Pn', '-p', '22', *hostnames)
             .and_return([mock_nmap_output_partial, mock_nmap_stderr, instance_double(Process::Status, success?: true)])
         end
 
@@ -306,7 +335,7 @@ RSpec.describe BoltDynamicInventory do
       context 'when nmap fails' do
         before do
           allow(Open3).to receive(:capture3)
-            .with('nmap', '-sn', *hostnames)
+            .with('nmap', '-Pn', '-p', '22', *hostnames)
             .and_return(['', 'nmap: command not found',
                          instance_double(Process::Status, success?: false, exitstatus: 127)])
         end
@@ -320,7 +349,7 @@ RSpec.describe BoltDynamicInventory do
       context 'when all hosts are unreachable' do
         before do
           allow(Open3).to receive(:capture3)
-            .with('nmap', '-sn', *hostnames)
+            .with('nmap', '-Pn', '-p', '22', *hostnames)
             .and_return(['', mock_nmap_stderr, instance_double(Process::Status, success?: true)])
         end
 

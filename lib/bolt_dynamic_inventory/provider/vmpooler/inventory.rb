@@ -59,10 +59,13 @@ module BoltDynamicInventory
           return vms if vms.empty?
 
           hostnames = vms.map { |item| item['hostname'] }
-          stdout, stderr, status = Open3.capture3('nmap', '-sn', *hostnames)
+          # Use -Pn to skip ping and check SSH port 22
+          # This works for both Linux and Windows hosts in modern environments
+          stdout, stderr, status = Open3.capture3('nmap', '-Pn', '-p', '22', *hostnames)
 
           print_and_abort('nmap failed', stderr, status) unless status.success?
 
+          # Extract hostnames from "Host is up" entries
           active_hostnames = stdout.lines
                                    .grep(/^Nmap scan report for/)
                                    .map { |line| line.match(/^Nmap scan report for (\S+)/)[1] }
