@@ -100,10 +100,9 @@ module BoltDynamicInventory
 
         # Generate the Bolt inventory structure
         def generate_inventory(vms)
-          targets_with_type = extract_targets_with_type(vms)
-          target_names = targets_with_type.map { |t| t['name'] }
-          windows_targets, linux_targets = partition_targets_by_type(targets_with_type)
-          targets = targets_with_type.map { |t| t.except('type') }
+          targets = extract_targets_with_type(vms)
+          target_names = targets.map { |t| t['name'] }
+          windows_targets, linux_targets = partition_targets_by_type(targets)
 
           {
             'targets' => targets,
@@ -116,14 +115,16 @@ module BoltDynamicInventory
             {
               'name' => vm['hostname'].split('.').first,
               'uri' => vm['hostname'],
-              'type' => vm['type']
+              'vars' => {
+                'type' => vm['type']
+              }
             }
           end
         end
 
         def partition_targets_by_type(targets_with_type)
-          windows = targets_with_type.select { |t| t['type'].include?('win') }.map { |t| t['name'] }
-          linux = targets_with_type.reject { |t| t['type'].include?('win') }.map { |t| t['name'] }
+          windows = targets_with_type.select { |t| t['vars']['type'].include?('win') }.map { |t| t['name'] }
+          linux = targets_with_type.reject { |t| t['vars']['type'].include?('win') }.map { |t| t['name'] }
           [windows, linux]
         end
 

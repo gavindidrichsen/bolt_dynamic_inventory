@@ -254,6 +254,19 @@ RSpec.describe BoltDynamicInventory do
         )
       end
 
+      it 'includes vars with type for each target' do
+        targets = result['targets']
+
+        onetime_target = targets.find { |t| t['name'] == 'onetime-algebra' }
+        expect(onetime_target['vars']).to eq('type' => 'win-2019-x86_64')
+
+        tender_target = targets.find { |t| t['name'] == 'tender-punditry' }
+        expect(tender_target['vars']).to eq('type' => 'ubuntu-2004-x86_64')
+
+        normal_target = targets.find { |t| t['name'] == 'normal-meddling' }
+        expect(normal_target['vars']).to eq('type' => 'ubuntu-2004-x86_64')
+      end
+
       it 'configures windows group correctly' do
         windows_group = result['groups'].find { |g| g['name'] == 'windows' }
         expect(windows_group['targets']).to contain_exactly('onetime-algebra')
