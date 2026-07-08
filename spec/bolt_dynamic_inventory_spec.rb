@@ -56,6 +56,7 @@ RSpec.describe BoltDynamicInventory do
 
         expect(ssh_config).to include(
           'native-ssh' => true,
+          'copy-command' => ['scp', '-r', '-O'],
           'load-config' => true,
           'login-shell' => 'bash',
           'tty' => false,
@@ -214,6 +215,7 @@ RSpec.describe BoltDynamicInventory do
         expect(linux_group['facts']).to eq('role' => 'linux')
         expect(linux_group['config']['ssh']).to include(
           'native-ssh' => true,
+          'copy-command' => ['scp', '-r', '-O'],
           'load-config' => true,
           'login-shell' => 'bash'
         )
@@ -290,6 +292,7 @@ RSpec.describe BoltDynamicInventory do
         expect(linux_group['facts']).to eq('role' => 'linux')
         expect(linux_group['config']['ssh']).to include(
           'native-ssh' => true,
+          'copy-command' => ['scp', '-r', '-O'],
           'load-config' => true,
           'login-shell' => 'bash'
         )
