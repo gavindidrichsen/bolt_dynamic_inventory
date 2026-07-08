@@ -27,6 +27,7 @@ module BoltDynamicInventory
           'transport' => 'ssh',
           'ssh' => {
             'native-ssh' => true,
+            'copy-command' => ['scp', '-r', '-O'],
             'load-config' => true,
             'login-shell' => 'bash',
             'tty' => false,
