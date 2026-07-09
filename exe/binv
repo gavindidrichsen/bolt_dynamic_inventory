@@ -5,7 +5,7 @@ require 'bolt_dynamic_inventory'
 require 'yaml'
 require 'optparse'
 
-options = { group_patterns: [], provider: 'orbstack' }
+options = { group_patterns: [], provider: 'orbstack', refresh: false }
 
 # Parse command line options
 OptionParser.new do |opts|
@@ -24,6 +24,10 @@ OptionParser.new do |opts|
     options[:provider] = provider
   end
 
+  opts.on('-r', '--refresh', 'Force cache refresh') do
+    options[:refresh] = true
+  end
+
   opts.on('-v', '--version', 'Show version information') do
     puts "binv #{BoltDynamicInventory::VERSION}"
     exit
@@ -32,10 +36,25 @@ end.parse!
 
 # Create an instance of your inventory class with the group patterns
 inventory = BoltDynamicInventory.new({ 'provider' => options[:provider],
-                                       'group_patterns' => options[:group_patterns] })
+                                       'group_patterns' => options[:group_patterns],
+                                       'refresh' => options[:refresh] })
 
 # Generate the inventory
 inventory_data = inventory.generate
+
+# Warn on stderr if there are unavailable VMs
+if inventory_data['groups']&.any? { |g| g['name'] == 'unavailable' && !g['targets'].empty? }
+  unavailable = inventory_data['groups'].find { |g| g['name'] == 'unavailable' }
+  count = unavailable['targets'].length
+  suffix = count == 1 ? '' : 's'
+  warn "\e[33mWarning: #{count} unavailable VM#{suffix} moved to the 'unavailable' group — check connectivity\e[0m"
+end
+
+# Report the persisted inventory path on stderr for providers that cache
+if options[:provider] == 'vmpooler'
+  cache = BoltDynamicInventory::VmCache.new(provider: options[:provider])
+  warn "Inventory written to #{cache.inventory_path}"
+end
 
 # Output as YAML
 puts inventory_data.to_yaml

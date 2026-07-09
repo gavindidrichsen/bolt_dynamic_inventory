@@ -10,18 +10,18 @@ For bolt to connect to a vmpooler windows server over `winrm`, the `inventory.ya
 
 ```yaml
 groups:
-- name: windows
-  config:
-    transport: winrm
-    winrm:
-      user: Administrator
-      password:
-        _plugin: env_var
-        var: VMPOOLER_WINDOWS_PASSWORD
-      ssl: false
+  - name: windows
+    config:
+      transport: winrm
+      winrm:
+        user: Administrator
+        password:
+          _plugin: env_var
+          var: VMPOOLER_WINDOWS_PASSWORD
+        ssl: false
 ```
 
-As long as the `VMPOOLER_WINDOWS_PASSWORD` environment variable is set to a valid password, then bolt will connect to the windows server(s).  For more information, see the sample `inventory.yaml` produced by the `bolt_dynamic_inventory` gem in the [appendix](#sample-vmpoller-bolt-inventory).
+As long as the `VMPOOLER_WINDOWS_PASSWORD` environment variable is set to a valid password, then bolt will connect to the windows server(s). For more information, see the sample `inventory.yaml` produced by the `bolt_dynamic_inventory` gem in the [appendix](#sample-vmpoller-bolt-inventory).
 
 ## Usage
 
@@ -31,7 +31,7 @@ Export the following environment variable, making sure to replace `<WINDOWS_PASS
 export VMPOOLER_WINDOWS_PASSWORD=<WINDOWS_PASSWORD>
 
 # output a vmpooler inventory file
-bundle exec binv --provider=vmpooler     
+bundle exec binv --provider=vmpooler
 
 # run a simple command via bolt, e.g.,
 /opt/puppetlabs/bin/bolt command run ipconfig --verbose --inventoryfile=<(bundle exec binv --provider=vmpooler) --targets=windows
@@ -42,7 +42,7 @@ bundle exec binv --provider=vmpooler
 ### Sample vmpoller bolt inventory
 
 ```bash
-➜  bolt_dynamic_inventory git:(development) ✗ bundle exec binv --provider=vmpooler                              
+➜  bolt_dynamic_inventory git:(development) ✗ bundle exec binv --provider=vmpooler
 ---
 targets:
 - name: onetime-algebra
@@ -87,5 +87,5 @@ groups:
   targets:
   - tender-punditry
   - normal-meddling
-➜  bolt_dynamic_inventory git:(development) ✗ 
+➜  bolt_dynamic_inventory git:(development) ✗
 ```

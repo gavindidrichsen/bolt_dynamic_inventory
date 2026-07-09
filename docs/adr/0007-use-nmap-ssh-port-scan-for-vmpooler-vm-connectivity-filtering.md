@@ -32,7 +32,7 @@ We initially considered using RDP port 3389 for Windows detection, but found tha
 
 - **Fast parallel scanning** - nmap can check multiple hosts simultaneously
 - **Reliable Windows detection** - `-Pn` flag bypasses ping issues common with Windows
-- **No additional API overhead** - Single nmap command replaces multiple floaty API calls  
+- **No additional API overhead** - Single nmap command replaces multiple floaty API calls
 - **Universal compatibility** - SSH port 22 works for both Linux and Windows VMs
 - **Graceful failure handling** - DNS resolution failures are handled cleanly
 

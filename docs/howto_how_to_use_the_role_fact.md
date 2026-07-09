@@ -2,7 +2,7 @@
 
 ## Description
 
-This document shows a simple use-case for the `role` fact, which is included in the dynamically generated bolt inventory.  One advantage of this `role` fact is that bolt can use it on first execution **before** any facts have been collected by puppet on any of the targets.
+This document shows a simple use-case for the `role` fact, which is included in the dynamically generated bolt inventory. One advantage of this `role` fact is that bolt can use it on first execution **before** any facts have been collected by puppet on any of the targets.
 
 The following example configures the `puppetlabs-motd` module using this fact.
 
@@ -80,11 +80,11 @@ See sample output in the [appendix](#sample-output).
 
 ### Sample output
 
-* run the plan injecting the `role` fact:
+- run the plan injecting the `role` fact:
 
 ```bash
 # run the plan injecting the 'role' fact
-➜  motd git:(development) ✗ /opt/puppetlabs/bin/bolt plan run usage::sayhello --targets=all --verbose   
+➜  motd git:(development) ✗ /opt/puppetlabs/bin/bolt plan run usage::sayhello --targets=all --verbose
 
 Starting: plan usage::sayhello
 Starting: install puppet and gather facts on agent01, agent02, agent03, compiler01, compiler02
@@ -113,10 +113,10 @@ Finished on agent02:
 Finished: apply catalog with 0 failures in 11.18 sec
 Finished: plan usage::sayhello in 29.5 sec
 Plan completed successfully with no result
-➜  motd git:(development) ✗ 
+➜  motd git:(development) ✗
 ```
 
-* verify the expected `/etc/motd` content:
+- verify the expected `/etc/motd` content:
 
 ```bash
 # verify the expected content
@@ -138,5 +138,5 @@ Finished on agent01:
   WELCOME!  I'm an [agent]
 Successful on 5 targets: agent01,agent02,agent03,compiler01,compiler02
 Ran on 5 targets in 1.85 sec
-➜  motd git:(development) ✗ 
+➜  motd git:(development) ✗
 ```

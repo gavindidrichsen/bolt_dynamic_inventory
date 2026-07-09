@@ -95,7 +95,13 @@ RSpec.describe BoltDynamicInventory do
   end
 
   describe BoltDynamicInventory::Provider::Vmpooler::Inventory do
-    let(:mock_vmpooler_json) do
+    before do
+      allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:read).and_return(nil)
+      allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write)
+      allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write_inventory)
+    end
+
+    let(:mock_abs_json) do
       {
         'job-1' => {
           'state' => 'filled',
@@ -109,6 +115,32 @@ RSpec.describe BoltDynamicInventory do
             { 'hostname' => 'tender-punditry.delivery.puppetlabs.net', 'type' => 'ubuntu-2004-x86_64' },
             { 'hostname' => 'normal-meddling.delivery.puppetlabs.net', 'type' => 'ubuntu-2004-x86_64' }
           ]
+        }
+      }.to_json
+    end
+
+    let(:mock_vmpooler_service_json) do
+      {
+        'onetime-algebra' => {
+          'template' => 'win-2019-x86_64',
+          'fqdn' => 'onetime-algebra.delivery.puppetlabs.net',
+          'state' => 'running',
+          'lifetime' => 24,
+          'running' => 3.5
+        },
+        'tender-punditry' => {
+          'template' => 'ubuntu-2004-x86_64',
+          'fqdn' => 'tender-punditry.delivery.puppetlabs.net',
+          'state' => 'running',
+          'lifetime' => 24,
+          'running' => 6.0
+        },
+        'normal-meddling' => {
+          'template' => 'ubuntu-2004-x86_64',
+          'fqdn' => 'normal-meddling.delivery.puppetlabs.net',
+          'state' => 'running',
+          'lifetime' => 24,
+          'running' => 6.0
         }
       }.to_json
     end
@@ -179,12 +211,24 @@ RSpec.describe BoltDynamicInventory do
       STDERR
     end
 
+    let(:success_status) { instance_double(Process::Status, success?: true) }
+
+    def stub_abs_response(json_str)
+      allow(Open3).to receive(:capture3)
+        .with('floaty', 'list', '--active', '--json')
+        .and_return([json_str, '', success_status])
+    end
+
+    def stub_vmpooler_service_response(json_str)
+      allow(Open3).to receive(:capture3)
+        .with('floaty', 'list', '--active', '--json', '--service', 'vmpooler')
+        .and_return([json_str, '', success_status])
+    end
+
     context 'when no VMs are available' do
       before do
-        allow(Open3).to receive(:capture3)
-          .with('floaty list --active --json')
-          .and_return(['', '', instance_double(Process::Status, success?: true)])
-        # No need to mock nmap since no VMs means no filtering needed
+        stub_abs_response('')
+        stub_vmpooler_service_response('')
       end
 
       it 'generates inventory with empty targets and base groups' do
@@ -193,7 +237,6 @@ RSpec.describe BoltDynamicInventory do
 
         expect(result['targets']).to eq([])
 
-        # Check windows group is empty but configured
         windows_group = result['groups'].find { |g| g['name'] == 'windows' }
         expect(windows_group['targets']).to eq([])
         expect(windows_group['facts']).to eq('role' => 'windows')
@@ -209,7 +252,6 @@ RSpec.describe BoltDynamicInventory do
           }
         )
 
-        # Check linux group is empty but configured
         linux_group = result['groups'].find { |g| g['name'] == 'linux' }
         expect(linux_group['targets']).to eq([])
         expect(linux_group['facts']).to eq('role' => 'linux')
@@ -229,7 +271,6 @@ RSpec.describe BoltDynamicInventory do
         )
         result = inventory.generate
 
-        # Check regex-based group is empty
         agent_group = result['groups'].find { |g| g['name'] == 'agent' }
         expect(agent_group['targets']).to eq([])
         expect(agent_group['facts']).to eq('role' => 'agent')
@@ -238,12 +279,11 @@ RSpec.describe BoltDynamicInventory do
 
     describe 'with available VMs' do
       before do
-        allow(Open3).to receive(:capture3)
-          .with('floaty list --active --json')
-          .and_return([mock_vmpooler_json, '', instance_double(Process::Status, success?: true)])
+        stub_abs_response(mock_abs_json)
+        stub_vmpooler_service_response(mock_vmpooler_service_json)
         allow(Open3).to receive(:capture3)
           .with('nmap', '-Pn', '-p', '22', *hostnames)
-          .and_return([mock_nmap_output_all_alive, mock_nmap_stderr, instance_double(Process::Status, success?: true)])
+          .and_return([mock_nmap_output_all_alive, mock_nmap_stderr, success_status])
       end
 
       let(:inventory) { described_class.new }
@@ -256,17 +296,16 @@ RSpec.describe BoltDynamicInventory do
         )
       end
 
-      it 'includes vars with type for each target' do
+      it 'includes vars with type and ttl for each target' do
         targets = result['targets']
 
         onetime_target = targets.find { |t| t['name'] == 'onetime-algebra' }
-        expect(onetime_target['vars']).to eq('type' => 'win-2019-x86_64')
+        expect(onetime_target['vars']['type']).to eq('win-2019-x86_64')
+        expect(onetime_target['vars']['ttl']).to match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)
 
         tender_target = targets.find { |t| t['name'] == 'tender-punditry' }
-        expect(tender_target['vars']).to eq('type' => 'ubuntu-2004-x86_64')
-
-        normal_target = targets.find { |t| t['name'] == 'normal-meddling' }
-        expect(normal_target['vars']).to eq('type' => 'ubuntu-2004-x86_64')
+        expect(tender_target['vars']['type']).to eq('ubuntu-2004-x86_64')
+        expect(tender_target['vars']['ttl']).to match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)
       end
 
       it 'configures windows group correctly' do
@@ -306,45 +345,189 @@ RSpec.describe BoltDynamicInventory do
         )
         result = inventory.generate
 
-        # Base groups should still exist
         expect(result['groups'].find { |g| g['name'] == 'windows' }).not_to be_nil
         expect(result['groups'].find { |g| g['name'] == 'linux' }).not_to be_nil
 
-        # Check regex-based group
         agent_group = result['groups'].find { |g| g['name'] == 'agent' }
         expect(agent_group['targets']).to contain_exactly('tender-punditry', 'normal-meddling')
         expect(agent_group['facts']).to eq('role' => 'agent')
       end
     end
 
+    describe 'merging VMs from ABS and vmpooler services' do
+      let(:extra_vmpooler_json) do
+        {
+          'onetime-algebra' => {
+            'template' => 'win-2019-x86_64',
+            'fqdn' => 'onetime-algebra.delivery.puppetlabs.net',
+            'state' => 'running',
+            'lifetime' => 24,
+            'running' => 3.5
+          },
+          'tender-punditry' => {
+            'template' => 'ubuntu-2004-x86_64',
+            'fqdn' => 'tender-punditry.delivery.puppetlabs.net',
+            'state' => 'running',
+            'lifetime' => 24,
+            'running' => 6.0
+          },
+          'normal-meddling' => {
+            'template' => 'ubuntu-2004-x86_64',
+            'fqdn' => 'normal-meddling.delivery.puppetlabs.net',
+            'state' => 'running',
+            'lifetime' => 24,
+            'running' => 6.0
+          },
+          'tight-mantrap' => {
+            'template' => 'ubuntu-2404-x86_64',
+            'fqdn' => 'tight-mantrap.delivery.puppetlabs.net',
+            'state' => 'running',
+            'lifetime' => 24,
+            'running' => 1.0
+          },
+          'unhurt-gadgetry' => {
+            'template' => 'ubuntu-2404-x86_64',
+            'fqdn' => 'unhurt-gadgetry.delivery.puppetlabs.net',
+            'state' => 'running',
+            'lifetime' => 24,
+            'running' => 1.0
+          }
+        }.to_json
+      end
+
+      let(:all_hostnames) do
+        %w[
+          onetime-algebra.delivery.puppetlabs.net
+          tender-punditry.delivery.puppetlabs.net
+          normal-meddling.delivery.puppetlabs.net
+          tight-mantrap.delivery.puppetlabs.net
+          unhurt-gadgetry.delivery.puppetlabs.net
+        ]
+      end
+
+      let(:mock_nmap_output_all_five) do
+        <<~NMAP
+          Starting Nmap 7.98 ( https://nmap.org ) at 2025-10-28 18:00 +0000
+          Nmap scan report for onetime-algebra.delivery.puppetlabs.net (10.16.121.11)
+          Host is up (0.15s latency).
+          Nmap scan report for tender-punditry.delivery.puppetlabs.net (10.16.121.12)
+          Host is up (0.15s latency).
+          Nmap scan report for normal-meddling.delivery.puppetlabs.net (10.16.121.13)
+          Host is up (0.15s latency).
+          Nmap scan report for tight-mantrap.delivery.puppetlabs.net (10.16.121.14)
+          Host is up (0.15s latency).
+          Nmap scan report for unhurt-gadgetry.delivery.puppetlabs.net (10.16.121.15)
+          Host is up (0.15s latency).
+          Nmap done: 5 IP addresses (5 hosts up) scanned in 1.34 seconds
+        NMAP
+      end
+
+      before do
+        stub_abs_response(mock_abs_json)
+        stub_vmpooler_service_response(extra_vmpooler_json)
+        allow(Open3).to receive(:capture3)
+          .with('nmap', '-Pn', '-p', '22', *all_hostnames)
+          .and_return([mock_nmap_output_all_five, '', success_status])
+      end
+
+      it 'includes VMs from both ABS and vmpooler services' do
+        inventory = described_class.new
+        result = inventory.generate
+
+        expect(result['targets'].map { |t| t['name'] }).to contain_exactly(
+          'onetime-algebra', 'tender-punditry', 'normal-meddling',
+          'tight-mantrap', 'unhurt-gadgetry'
+        )
+      end
+
+      it 'does not duplicate VMs present in both sources' do
+        inventory = described_class.new
+        result = inventory.generate
+
+        hostnames_in_result = result['targets'].map { |t| t['uri'] }
+        expect(hostnames_in_result.length).to eq(hostnames_in_result.uniq.length)
+      end
+
+      it 'correctly groups merged VMs by OS type' do
+        inventory = described_class.new
+        result = inventory.generate
+
+        windows_group = result['groups'].find { |g| g['name'] == 'windows' }
+        expect(windows_group['targets']).to contain_exactly('onetime-algebra')
+
+        linux_group = result['groups'].find { |g| g['name'] == 'linux' }
+        expect(linux_group['targets']).to contain_exactly(
+          'tender-punditry', 'normal-meddling', 'tight-mantrap', 'unhurt-gadgetry'
+        )
+      end
+    end
+
+    describe 'VMs only in vmpooler service' do
+      let(:vmpooler_only_json) do
+        {
+          'tight-mantrap' => {
+            'template' => 'ubuntu-2404-x86_64',
+            'fqdn' => 'tight-mantrap.delivery.puppetlabs.net',
+            'state' => 'running',
+            'lifetime' => 24,
+            'running' => 2.0
+          }
+        }.to_json
+      end
+
+      let(:vmpooler_only_nmap) do
+        <<~NMAP
+          Nmap scan report for tight-mantrap.delivery.puppetlabs.net (10.16.121.14)
+          Host is up (0.15s latency).
+        NMAP
+      end
+
+      before do
+        stub_abs_response('{}')
+        stub_vmpooler_service_response(vmpooler_only_json)
+        allow(Open3).to receive(:capture3)
+          .with('nmap', '-Pn', '-p', '22', 'tight-mantrap.delivery.puppetlabs.net')
+          .and_return([vmpooler_only_nmap, '', success_status])
+      end
+
+      it 'discovers VMs not tracked by ABS' do
+        inventory = described_class.new
+        result = inventory.generate
+
+        expect(result['targets'].length).to eq(1)
+        expect(result['targets'].first['name']).to eq('tight-mantrap')
+        expect(result['targets'].first['vars']['type']).to eq('ubuntu-2404-x86_64')
+      end
+    end
+
     describe 'host filtering with nmap' do
       before do
-        allow(Open3).to receive(:capture3)
-          .with('floaty list --active --json')
-          .and_return([mock_vmpooler_json, '', instance_double(Process::Status, success?: true)])
+        stub_abs_response(mock_abs_json)
+        stub_vmpooler_service_response(mock_vmpooler_service_json)
       end
 
       context 'when some hosts are unreachable' do
         before do
           allow(Open3).to receive(:capture3)
             .with('nmap', '-Pn', '-p', '22', *hostnames)
-            .and_return([mock_nmap_output_partial, mock_nmap_stderr, instance_double(Process::Status, success?: true)])
+            .and_return([mock_nmap_output_partial, mock_nmap_stderr, success_status])
         end
 
-        it 'filters out unreachable hosts' do
+        it 'moves unreachable hosts to the unavailable group' do
           inventory = described_class.new
           result = inventory.generate
 
-          expect(result['targets'].length).to eq(2)
-          expect(result['targets'].map { |t| t['name'] }).to contain_exactly('tender-punditry', 'normal-meddling')
+          expect(result['targets'].length).to eq(3)
 
-          # Windows group should be empty since onetime-algebra is unreachable
           windows_group = result['groups'].find { |g| g['name'] == 'windows' }
           expect(windows_group['targets']).to eq([])
 
-          # Linux group should only contain reachable hosts
           linux_group = result['groups'].find { |g| g['name'] == 'linux' }
           expect(linux_group['targets']).to contain_exactly('tender-punditry', 'normal-meddling')
+
+          unavailable_group = result['groups'].find { |g| g['name'] == 'unavailable' }
+          expect(unavailable_group['targets']).to contain_exactly('onetime-algebra')
+          expect(unavailable_group['facts']).to eq('role' => 'unavailable')
         end
       end
 
@@ -366,16 +549,21 @@ RSpec.describe BoltDynamicInventory do
         before do
           allow(Open3).to receive(:capture3)
             .with('nmap', '-Pn', '-p', '22', *hostnames)
-            .and_return(['', mock_nmap_stderr, instance_double(Process::Status, success?: true)])
+            .and_return(['', mock_nmap_stderr, success_status])
         end
 
-        it 'generates inventory with empty targets' do
+        it 'puts all targets in the unavailable group' do
           inventory = described_class.new
           result = inventory.generate
 
-          expect(result['targets']).to eq([])
+          expect(result['targets'].length).to eq(3)
           expect(result['groups'].find { |g| g['name'] == 'windows' }['targets']).to eq([])
           expect(result['groups'].find { |g| g['name'] == 'linux' }['targets']).to eq([])
+
+          unavailable_group = result['groups'].find { |g| g['name'] == 'unavailable' }
+          expect(unavailable_group['targets']).to contain_exactly(
+            'onetime-algebra', 'tender-punditry', 'normal-meddling'
+          )
         end
       end
     end

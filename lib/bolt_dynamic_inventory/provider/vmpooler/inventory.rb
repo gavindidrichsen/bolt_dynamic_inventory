@@ -3,7 +3,9 @@
 require 'English'
 require 'json'
 require 'open3'
+require 'set'
 require 'yaml'
+require 'bolt_dynamic_inventory/vm_cache'
 
 module BoltDynamicInventory
   module Provider
@@ -39,16 +41,30 @@ module BoltDynamicInventory
 
         def initialize(config = {})
           @group_patterns = parse_group_patterns(config['group_patterns'])
+          @refresh = config['refresh'] || false
+          @cache = VmCache.new(provider: 'vmpooler')
         end
 
-        # Generate a Bolt inventory structure from VMPooler VMs
         def generate
-          vms = fetch_vmpooler_vms
-          vms = filter_alive_hosts(vms)
-          generate_inventory(vms)
+          vms = load_vms
+          alive, unavailable = partition_by_availability(vms)
+          inventory_data = generate_inventory(alive, unavailable)
+          @cache.write_inventory(inventory_data)
+          inventory_data
         end
 
         private
+
+        def load_vms
+          unless @refresh
+            cached = @cache.read
+            return cached if cached && !@cache.any_vm_expired?(cached)
+          end
+
+          vms = fetch_vmpooler_vms
+          @cache.write(vms)
+          vms
+        end
 
         def print_and_abort(message, stderr, status)
           error_msg = "#{message} with exit code #{status.exitstatus}"
@@ -56,39 +72,39 @@ module BoltDynamicInventory
           raise error_msg
         end
 
-        def filter_alive_hosts(vms)
-          return vms if vms.empty?
+        def partition_by_availability(vms)
+          return [[], []] if vms.empty?
 
           hostnames = vms.map { |item| item['hostname'] }
-          # Use -Pn to skip ping and check SSH port 22
-          # This works for both Linux and Windows hosts in modern environments
           stdout, stderr, status = Open3.capture3('nmap', '-Pn', '-p', '22', *hostnames)
 
           print_and_abort('nmap failed', stderr, status) unless status.success?
 
-          # Extract hostnames from "Host is up" entries
           active_hostnames = stdout.lines
                                    .grep(/^Nmap scan report for/)
-                                   .map { |line| line.match(/^Nmap scan report for (\S+)/)[1] }
+                                   .to_set { |line| line.match(/^Nmap scan report for (\S+)/)[1] }
 
-          return [] if active_hostnames.empty?
-
-          vms.select { |vm| active_hostnames.include?(vm['hostname']) }
+          alive = vms.select { |vm| active_hostnames.include?(vm['hostname']) }
+          unavailable = vms.reject { |vm| active_hostnames.include?(vm['hostname']) }
+          [alive, unavailable]
         end
 
-        # Fetch VMPooler VM details
+        # Fetch VMPooler VM details from both ABS and vmpooler services
         def fetch_vmpooler_vms
-          stdout, stderr, status = Open3.capture3('floaty list --active --json')
+          abs_vms = fetch_abs_vms
+          vmpooler_vms = fetch_vmpooler_service_vms
+          merge_vm_lists(abs_vms, vmpooler_vms)
+        end
+
+        def fetch_abs_vms
+          stdout, stderr, status = Open3.capture3('floaty', 'list', '--active', '--json')
           print_and_abort('Failed to get VM list from floaty', stderr, status) unless status.success?
 
-          # Return empty array if stdout is empty (no VMs)
           return [] if stdout.strip.empty?
 
-          # Parse JSON stdout and return empty array if data is nil or empty
           data = JSON.parse(stdout)
           return [] if data.nil? || data.empty?
 
-          # Extract VMs that are in 'filled' or 'allocated' state and have allocated resources
           data.values.select { |job| %w[filled allocated].include?(job['state']) }.flat_map do |job|
             job['allocated_resources'].map do |resource|
               {
@@ -99,26 +115,73 @@ module BoltDynamicInventory
           end
         end
 
-        # Generate the Bolt inventory structure
-        def generate_inventory(vms)
-          targets = extract_targets_with_type(vms)
-          target_names = targets.map { |t| t['name'] }
-          windows_targets, linux_targets = partition_targets_by_type(targets)
+        def fetch_vmpooler_service_vms
+          stdout, stderr, status = Open3.capture3('floaty', 'list', '--active', '--json', '--service', 'vmpooler')
+          print_and_abort('Failed to get VM list from vmpooler service', stderr, status) unless status.success?
+
+          return [] if stdout.strip.empty?
+
+          data = JSON.parse(stdout)
+          return [] if data.nil? || data.empty?
+
+          now = Time.now
+          data.map do |short_name, vm_info|
+            vm = {
+              'hostname' => vm_info['fqdn'] || "#{short_name}.delivery.puppetlabs.net",
+              'type' => vm_info['template']
+            }
+            lifetime = vm_info['lifetime']
+            running = vm_info['running']
+            if lifetime && running
+              remaining_hours = lifetime.to_f - running.to_f
+              reap_time = now + (remaining_hours * 3600)
+              vm['ttl'] = reap_time.strftime('%Y-%m-%d %H:%M')
+            end
+            vm
+          end
+        end
+
+        def merge_vm_lists(abs_vms, vmpooler_vms)
+          vmpooler_by_host = vmpooler_vms.each_with_object({}) { |vm, h| h[vm['hostname']] = vm }
+
+          merged = abs_vms.map do |abs_vm|
+            vmpooler_vm = vmpooler_by_host.delete(abs_vm['hostname'])
+            if vmpooler_vm && vmpooler_vm['ttl']
+              abs_vm.merge('ttl' => vmpooler_vm['ttl'])
+            else
+              abs_vm
+            end
+          end
+
+          merged.concat(vmpooler_by_host.values)
+        end
+
+        def generate_inventory(alive_vms, unavailable_vms)
+          targets = extract_targets(alive_vms + unavailable_vms)
+          alive_names = alive_vms.map { |vm| vm['hostname'].split('.').first }
+          unavailable_names = unavailable_vms.map { |vm| vm['hostname'].split('.').first }
+
+          alive_targets = targets.select { |t| alive_names.include?(t['name']) }
+          windows_targets, linux_targets = partition_targets_by_type(alive_targets)
+
+          groups = base_groups(windows_targets, linux_targets)
+          groups << unavailable_group(unavailable_names) unless unavailable_names.empty?
+          groups.concat(regex_groups(alive_names))
 
           {
             'targets' => targets,
-            'groups' => base_groups(windows_targets, linux_targets) + regex_groups(target_names)
+            'groups' => groups
           }
         end
 
-        def extract_targets_with_type(vms)
+        def extract_targets(vms)
           vms.map do |vm|
+            vars = { 'type' => vm['type'] }
+            vars['ttl'] = vm['ttl'] if vm['ttl']
             {
               'name' => vm['hostname'].split('.').first,
               'uri' => vm['hostname'],
-              'vars' => {
-                'type' => vm['type']
-              }
+              'vars' => vars
             }
           end
         end
@@ -150,6 +213,14 @@ module BoltDynamicInventory
             'name' => 'linux',
             'config' => LINUX_CONFIG,
             'facts' => { 'role' => 'linux' },
+            'targets' => targets
+          }
+        end
+
+        def unavailable_group(targets)
+          {
+            'name' => 'unavailable',
+            'facts' => { 'role' => 'unavailable' },
             'targets' => targets
           }
         end

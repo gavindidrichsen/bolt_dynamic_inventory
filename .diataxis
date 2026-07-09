@@ -1,7 +1,6 @@
 {
+  "default": "docs",
   "readme": "docs/README.md",
-  "howtos": "docs/how-to",
-  "tutorials": "docs/tutorials",
-  "adr": "docs/adr"
+  "adr": "docs/adr",
+  "projects": "docs/_gtd"
 }
-
