@@ -95,6 +95,11 @@ RSpec.describe BoltDynamicInventory do
   end
 
   describe BoltDynamicInventory::Provider::Vmpooler::Inventory do
+    before do
+      allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:read).and_return(nil)
+      allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write)
+    end
+
     let(:mock_abs_json) do
       {
         'job-1' => {
