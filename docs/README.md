@@ -1,28 +1,8 @@
 # bolt_dynamic_inventory
 
-## Getting Started
+## Description
 
-* [How to setup the environment](howto_how_to_setup_the_environment.md)
-* [How to use as a gem](howto_how_to_use_as_a_gem.md)
-* [How to use as a bolt dynamic plugin](howto_how_to_use_as_a_bolt_dynamic_plugin.md)
-
-## Usage
-
-* [How to use the `role` fact](howto_how_to_use_the_role_fact.md)
-* [How to create a basic dynamic inventory plugin](howto_how_to_create_a_basic_dynamic_inventory_plugin.md)
-
-## Provider Guides
-
-### OrbStack
-
-* [How to create and remove orbstack VMs from the command-line](howto_how_to_create_and_remove_orbstack_vms_from_the_command_line.md)
-
-### VMPooler
-
-* [How to setup windows credentials for vmpooler](howto_how_to_setup_windows_credentials_for_vmpooler.md)
-* [How to Test VMPooler Inventory Features](howto_how_to_test_vmpooler_inventory_features.md)
-
-## Design Decisions
+### Design Decisions
 
 <!-- adrlog -->
 * [ADR-0001](adr/0001-extend-this-gem-to-be-a-bolt-inventory-dynamic-plugin-also.md) - Extend this gem to be a bolt inventory dynamic plugin also
@@ -36,3 +16,16 @@
 * [ADR-0009](adr/0009-cache-vm-data-with-smart-ttl-based-invalidation.md) - Cache VM data with smart TTL-based invalidation
 * [ADR-0010](adr/0010-surface-unavailable-vms-in-a-dedicated-group-instead-of-silently-dropping.md) - Surface unavailable VMs in a dedicated group instead of silently dropping
 <!-- adrlogstop -->
+
+### How-To Guides
+
+<!-- howtolog -->
+* [How to create a basic dynamic inventory plugin](howto_how_to_create_a_basic_dynamic_inventory_plugin.md)
+* [How to create and remove orbstack VMs from the command-line](howto_how_to_create_and_remove_orbstack_vms_from_the_command_line.md)
+* [How to setup the environment](howto_how_to_setup_the_environment.md)
+* [How to setup windows credentials for vmpooler](howto_how_to_setup_windows_credentials_for_vmpooler.md)
+* [How to Test VMPooler Inventory Features](howto_how_to_test_vmpooler_inventory_features.md)
+* [How to use as a bolt dynamic plugin](howto_how_to_use_as_a_bolt_dynamic_plugin.md)
+* [How to use as a gem](howto_how_to_use_as_a_gem.md)
+* [How to use the `role` fact](howto_how_to_use_the_role_fact.md)
+<!-- howtologstop -->

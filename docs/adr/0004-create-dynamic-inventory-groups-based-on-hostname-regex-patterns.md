@@ -28,7 +28,7 @@ group_patterns:
 
 ## Consequences
 
-The bolt_dynamic_inventory plugin now supports dynamic group creation based on target name patterns. This allows users to group their targets into logical groups based on their names.  **NOTE**:
+The bolt_dynamic_inventory plugin now supports dynamic group creation based on target name patterns. This allows users to group their targets into logical groups based on their names. **NOTE**:
 
-* if `group_patterns` is empty, then no groups are created.
-* if a group's regex pattern fails to match any targets, then that group is skipped.
+- if `group_patterns` is empty, then no groups are created.
+- if a group's regex pattern fails to match any targets, then that group is skipped.

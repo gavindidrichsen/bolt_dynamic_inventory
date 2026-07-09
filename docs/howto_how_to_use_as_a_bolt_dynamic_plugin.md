@@ -88,7 +88,7 @@ bolt inventory show --targets=windows
 bolt inventory show --targets=linux
 ```
 
-By adding a `group_patterns` section, then the bolt inventory will also include dynamic groups based on a regex pattern.  For example, given a couple vmpooler VMs that begin with "tender" and "normal", then the following will include them in a new group called `agent`:
+By adding a `group_patterns` section, then the bolt inventory will also include dynamic groups based on a regex pattern. For example, given a couple vmpooler VMs that begin with "tender" and "normal", then the following will include them in a new group called `agent`:
 
 ```bash
 # create a basic bolt inventory file that loads the plugin

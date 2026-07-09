@@ -45,7 +45,7 @@ bolt command run "hostname" --inventoryfile=<(binv) --targets=all
 
 **COOL TIP**: Create a simple dynamic inventory with an alias, e.g.,
 
-If you've added the `bundle_dynamic_inventory` to your system viat a `gem install bundle_dynamic_inventory...`, then your should be able to use the `binv` command anywhere on your system.  For example, I created the following aliases so that I could quickly run bolt commands against either vmpooler or orbstack:
+If you've added the `bundle_dynamic_inventory` to your system viat a `gem install bundle_dynamic_inventory...`, then your should be able to use the `binv` command anywhere on your system. For example, I created the following aliases so that I could quickly run bolt commands against either vmpooler or orbstack:
 
 ```bash
 # create an alias that always runs the inventory
@@ -88,7 +88,7 @@ bundle install
 Orbstack output:
 
 ```bash
-➜  develop-the-bolt-dynamic-plugin git:(development) ✗ bundle exec binv --provider=orbstack 
+➜  develop-the-bolt-dynamic-plugin git:(development) ✗ bundle exec binv --provider=orbstack
 ---
 config:
   transport: ssh
@@ -112,10 +112,10 @@ targets:
   uri: compiler01@orb
 - name: compiler02
   uri: compiler02@orb
-➜  develop-the-bolt-dynamic-plugin git:(development) ✗ 
+➜  develop-the-bolt-dynamic-plugin git:(development) ✗
 ```
 
-* `bundle exec binv --groups "agent:agen*,compiler:comp*"`
+- `bundle exec binv --groups "agent:agen*,compiler:comp*"`
 
 ```bash
 ➜  dump git:(development) ✗ bundle exec binv --provider=orbstack --groups "agent:agen*,compiler:comp*"
@@ -209,5 +209,5 @@ groups:
   targets:
   - tender-punditry
   - normal-meddling
-➜  bolt_dynamic_inventory git:(development) ✗ 
+➜  bolt_dynamic_inventory git:(development) ✗
 ```

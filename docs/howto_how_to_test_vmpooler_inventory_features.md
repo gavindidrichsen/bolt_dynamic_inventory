@@ -4,10 +4,10 @@ This guide shows you how to manually test the VMPooler inventory features to ens
 
 ## Prerequisites
 
-* Access to VMPooler
-* Bolt installed
-* The bolt_dynamic_inventory module installed
-* `nmap` installed (required for VM connectivity filtering)
+- Access to VMPooler
+- Bolt installed
+- The bolt_dynamic_inventory module installed
+- `nmap` installed (required for VM connectivity filtering)
 
 ## Test Scenarios
 
@@ -23,9 +23,9 @@ binv generate --provider vmpooler
 
 Verify:
 
-* Empty targets list
-* Windows and Linux groups exist but have no targets
-* Group configurations are present and correct
+- Empty targets list
+- Windows and Linux groups exist but have no targets
+- Group configurations are present and correct
 
 ### 2. Basic Inventory Generation (With VMs)
 
@@ -40,9 +40,9 @@ binv generate --provider vmpooler
 
 Verify:
 
-* All VMs appear in targets list
-* Windows VMs are in windows group with correct config
-* Linux VMs are in linux group with correct config
+- All VMs appear in targets list
+- Windows VMs are in windows group with correct config
+- Linux VMs are in linux group with correct config
 
 ### 3. Regex Group Pattern Testing
 
@@ -57,9 +57,9 @@ binv generate --provider vmpooler --config '{"group_patterns": [{"group": "agent
 
 Verify:
 
-* Base groups (windows/linux) exist and contain correct VMs
-* 'agent' group exists and contains VMs matching the pattern
-* Group facts and configurations are correct
+- Base groups (windows/linux) exist and contain correct VMs
+- 'agent' group exists and contains VMs matching the pattern
+- Group facts and configurations are correct
 
 ### 4. VM Connectivity Filtering Testing
 
@@ -83,10 +83,10 @@ binv generate --provider vmpooler
 
 Verify:
 
-* Only reachable VMs appear in the inventory
-* Destroyed VMs are automatically excluded from the targets
-* The filtering happens automatically without manual intervention
-* nmap connectivity checks work correctly for both Linux and Windows VMs
+- Only reachable VMs appear in the inventory
+- Destroyed VMs are automatically excluded from the targets
+- The filtering happens automatically without manual intervention
+- nmap connectivity checks work correctly for both Linux and Windows VMs
 
 **Note:** The connectivity filtering uses `nmap -Pn -p 22` to check SSH port availability, which works for both Linux and Windows VMPooler VMs.
 
@@ -100,11 +100,11 @@ bundle exec floaty delete <hostname>
 
 ## Troubleshooting
 
-* If inventory generation fails, check VMPooler connectivity
-* Verify VM hostnames in floaty output match expected patterns
-* Check Windows credentials are properly configured if testing Windows VMs
-* **nmap not found error**: Ensure `nmap` is installed on your system (see environment setup guide)
-* **Connectivity filtering issues**:
-  * Verify nmap can reach VMPooler network (test with `nmap -Pn -p 22 <vm-hostname>`)
-  * Check firewall rules if VMs appear unreachable but should be accessible
-  * DNS resolution issues may cause VMs to be filtered out
+- If inventory generation fails, check VMPooler connectivity
+- Verify VM hostnames in floaty output match expected patterns
+- Check Windows credentials are properly configured if testing Windows VMs
+- **nmap not found error**: Ensure `nmap` is installed on your system (see environment setup guide)
+- **Connectivity filtering issues**:
+  - Verify nmap can reach VMPooler network (test with `nmap -Pn -p 22 <vm-hostname>`)
+  - Check firewall rules if VMs appear unreachable but should be accessible
+  - DNS resolution issues may cause VMs to be filtered out

@@ -4,12 +4,12 @@
 
 The following shows how to create a bare-bones bolt inventory plugin with only 6 files:
 
-* `bolt-project.yaml​`
-* `inventory.yaml​`
-* `modules/basic_plugin/bolt-plugin.json​`
-* `modules/basic_plugin/tasks/resolve_reference.json​`
-* `modules/basic_plugin/tasks/resolve_reference.rb`
-* `modules/basic_plugin/tasks/inventory.yaml`
+- `bolt-project.yaml​`
+- `inventory.yaml​`
+- `modules/basic_plugin/bolt-plugin.json​`
+- `modules/basic_plugin/tasks/resolve_reference.json​`
+- `modules/basic_plugin/tasks/resolve_reference.rb`
+- `modules/basic_plugin/tasks/inventory.yaml`
 
 ## Pre-requisites
 
@@ -67,11 +67,11 @@ cat << 'EOL' > modules/basic_plugin/bolt_plugin.json
 EOL
 ```
 
-Create the `resolve_reference` task required by the plugin.  In other words,
+Create the `resolve_reference` task required by the plugin. In other words,
 
-* create the `modules/basic_plugin/tasks/resolve_reference.json​` task metadata.
-* create the `modules/basic_plugin/tasks/resolve_reference.rb` that loads the following hardcoded inventory.yaml
-* create the `modules/basic_plugin/tasks/inventory.yaml`
+- create the `modules/basic_plugin/tasks/resolve_reference.json​` task metadata.
+- create the `modules/basic_plugin/tasks/resolve_reference.rb` that loads the following hardcoded inventory.yaml
+- create the `modules/basic_plugin/tasks/inventory.yaml`
 
 ```bash
 # create the 'resolve_reference' task
@@ -197,5 +197,5 @@ Finished on agent01:
   agent01
 Successful on 5 targets: agent01,agent02,agent03,compiler01,compiler02
 Ran on 5 targets in 11.03 sec
-➜  my_plugin git:(development) 
+➜  my_plugin git:(development)
 ```
