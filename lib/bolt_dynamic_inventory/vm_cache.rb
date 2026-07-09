@@ -42,6 +42,18 @@ module BoltDynamicInventory
       File.delete(cache_path) if File.exist?(cache_path)
     end
 
+    def any_vm_expired?(vms)
+      now = Time.now
+      vms.any? do |vm|
+        next false unless vm['ttl']
+
+        reap_time = Time.parse(vm['ttl'])
+        reap_time <= now
+      end
+    rescue ArgumentError
+      false
+    end
+
     def stale?
       !fresh?
     end

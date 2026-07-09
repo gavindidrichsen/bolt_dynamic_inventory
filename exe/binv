@@ -5,7 +5,7 @@ require 'bolt_dynamic_inventory'
 require 'yaml'
 require 'optparse'
 
-options = { group_patterns: [], provider: 'orbstack' }
+options = { group_patterns: [], provider: 'orbstack', refresh: false }
 
 # Parse command line options
 OptionParser.new do |opts|
@@ -24,6 +24,10 @@ OptionParser.new do |opts|
     options[:provider] = provider
   end
 
+  opts.on('-r', '--refresh', 'Force cache refresh') do
+    options[:refresh] = true
+  end
+
   opts.on('-v', '--version', 'Show version information') do
     puts "binv #{BoltDynamicInventory::VERSION}"
     exit
@@ -32,7 +36,8 @@ end.parse!
 
 # Create an instance of your inventory class with the group patterns
 inventory = BoltDynamicInventory.new({ 'provider' => options[:provider],
-                                       'group_patterns' => options[:group_patterns] })
+                                       'group_patterns' => options[:group_patterns],
+                                       'refresh' => options[:refresh] })
 
 # Generate the inventory
 inventory_data = inventory.generate

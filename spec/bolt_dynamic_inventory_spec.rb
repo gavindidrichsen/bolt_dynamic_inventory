@@ -123,17 +123,23 @@ RSpec.describe BoltDynamicInventory do
         'onetime-algebra' => {
           'template' => 'win-2019-x86_64',
           'fqdn' => 'onetime-algebra.delivery.puppetlabs.net',
-          'state' => 'running'
+          'state' => 'running',
+          'lifetime' => 24,
+          'running' => 3.5
         },
         'tender-punditry' => {
           'template' => 'ubuntu-2004-x86_64',
           'fqdn' => 'tender-punditry.delivery.puppetlabs.net',
-          'state' => 'running'
+          'state' => 'running',
+          'lifetime' => 24,
+          'running' => 6.0
         },
         'normal-meddling' => {
           'template' => 'ubuntu-2004-x86_64',
           'fqdn' => 'normal-meddling.delivery.puppetlabs.net',
-          'state' => 'running'
+          'state' => 'running',
+          'lifetime' => 24,
+          'running' => 6.0
         }
       }.to_json
     end
@@ -289,17 +295,16 @@ RSpec.describe BoltDynamicInventory do
         )
       end
 
-      it 'includes vars with type for each target' do
+      it 'includes vars with type and ttl for each target' do
         targets = result['targets']
 
         onetime_target = targets.find { |t| t['name'] == 'onetime-algebra' }
-        expect(onetime_target['vars']).to eq('type' => 'win-2019-x86_64')
+        expect(onetime_target['vars']['type']).to eq('win-2019-x86_64')
+        expect(onetime_target['vars']['ttl']).to match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)
 
         tender_target = targets.find { |t| t['name'] == 'tender-punditry' }
-        expect(tender_target['vars']).to eq('type' => 'ubuntu-2004-x86_64')
-
-        normal_target = targets.find { |t| t['name'] == 'normal-meddling' }
-        expect(normal_target['vars']).to eq('type' => 'ubuntu-2004-x86_64')
+        expect(tender_target['vars']['type']).to eq('ubuntu-2004-x86_64')
+        expect(tender_target['vars']['ttl']).to match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)
       end
 
       it 'configures windows group correctly' do
@@ -354,27 +359,37 @@ RSpec.describe BoltDynamicInventory do
           'onetime-algebra' => {
             'template' => 'win-2019-x86_64',
             'fqdn' => 'onetime-algebra.delivery.puppetlabs.net',
-            'state' => 'running'
+            'state' => 'running',
+            'lifetime' => 24,
+            'running' => 3.5
           },
           'tender-punditry' => {
             'template' => 'ubuntu-2004-x86_64',
             'fqdn' => 'tender-punditry.delivery.puppetlabs.net',
-            'state' => 'running'
+            'state' => 'running',
+            'lifetime' => 24,
+            'running' => 6.0
           },
           'normal-meddling' => {
             'template' => 'ubuntu-2004-x86_64',
             'fqdn' => 'normal-meddling.delivery.puppetlabs.net',
-            'state' => 'running'
+            'state' => 'running',
+            'lifetime' => 24,
+            'running' => 6.0
           },
           'tight-mantrap' => {
             'template' => 'ubuntu-2404-x86_64',
             'fqdn' => 'tight-mantrap.delivery.puppetlabs.net',
-            'state' => 'running'
+            'state' => 'running',
+            'lifetime' => 24,
+            'running' => 1.0
           },
           'unhurt-gadgetry' => {
             'template' => 'ubuntu-2404-x86_64',
             'fqdn' => 'unhurt-gadgetry.delivery.puppetlabs.net',
-            'state' => 'running'
+            'state' => 'running',
+            'lifetime' => 24,
+            'running' => 1.0
           }
         }.to_json
       end
@@ -452,7 +467,9 @@ RSpec.describe BoltDynamicInventory do
           'tight-mantrap' => {
             'template' => 'ubuntu-2404-x86_64',
             'fqdn' => 'tight-mantrap.delivery.puppetlabs.net',
-            'state' => 'running'
+            'state' => 'running',
+            'lifetime' => 24,
+            'running' => 2.0
           }
         }.to_json
       end
@@ -495,18 +512,21 @@ RSpec.describe BoltDynamicInventory do
             .and_return([mock_nmap_output_partial, mock_nmap_stderr, success_status])
         end
 
-        it 'filters out unreachable hosts' do
+        it 'moves unreachable hosts to the unavailable group' do
           inventory = described_class.new
           result = inventory.generate
 
-          expect(result['targets'].length).to eq(2)
-          expect(result['targets'].map { |t| t['name'] }).to contain_exactly('tender-punditry', 'normal-meddling')
+          expect(result['targets'].length).to eq(3)
 
           windows_group = result['groups'].find { |g| g['name'] == 'windows' }
           expect(windows_group['targets']).to eq([])
 
           linux_group = result['groups'].find { |g| g['name'] == 'linux' }
           expect(linux_group['targets']).to contain_exactly('tender-punditry', 'normal-meddling')
+
+          unavailable_group = result['groups'].find { |g| g['name'] == 'unavailable' }
+          expect(unavailable_group['targets']).to contain_exactly('onetime-algebra')
+          expect(unavailable_group['facts']).to eq('role' => 'unavailable')
         end
       end
 
@@ -531,13 +551,18 @@ RSpec.describe BoltDynamicInventory do
             .and_return(['', mock_nmap_stderr, success_status])
         end
 
-        it 'generates inventory with empty targets' do
+        it 'puts all targets in the unavailable group' do
           inventory = described_class.new
           result = inventory.generate
 
-          expect(result['targets']).to eq([])
+          expect(result['targets'].length).to eq(3)
           expect(result['groups'].find { |g| g['name'] == 'windows' }['targets']).to eq([])
           expect(result['groups'].find { |g| g['name'] == 'linux' }['targets']).to eq([])
+
+          unavailable_group = result['groups'].find { |g| g['name'] == 'unavailable' }
+          expect(unavailable_group['targets']).to contain_exactly(
+            'onetime-algebra', 'tender-punditry', 'normal-meddling'
+          )
         end
       end
     end
