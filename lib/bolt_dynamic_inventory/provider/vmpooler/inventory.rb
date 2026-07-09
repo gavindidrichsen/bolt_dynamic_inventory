@@ -3,6 +3,7 @@
 require 'English'
 require 'json'
 require 'open3'
+require 'set'
 require 'yaml'
 
 module BoltDynamicInventory
@@ -76,19 +77,22 @@ module BoltDynamicInventory
           vms.select { |vm| active_hostnames.include?(vm['hostname']) }
         end
 
-        # Fetch VMPooler VM details
+        # Fetch VMPooler VM details from both ABS and vmpooler services
         def fetch_vmpooler_vms
-          stdout, stderr, status = Open3.capture3('floaty list --active --json')
+          abs_vms = fetch_abs_vms
+          vmpooler_vms = fetch_vmpooler_service_vms
+          merge_vm_lists(abs_vms, vmpooler_vms)
+        end
+
+        def fetch_abs_vms
+          stdout, stderr, status = Open3.capture3('floaty', 'list', '--active', '--json')
           print_and_abort('Failed to get VM list from floaty', stderr, status) unless status.success?
 
-          # Return empty array if stdout is empty (no VMs)
           return [] if stdout.strip.empty?
 
-          # Parse JSON stdout and return empty array if data is nil or empty
           data = JSON.parse(stdout)
           return [] if data.nil? || data.empty?
 
-          # Extract VMs that are in 'filled' or 'allocated' state and have allocated resources
           data.values.select { |job| %w[filled allocated].include?(job['state']) }.flat_map do |job|
             job['allocated_resources'].map do |resource|
               {
@@ -97,6 +101,32 @@ module BoltDynamicInventory
               }
             end
           end
+        end
+
+        def fetch_vmpooler_service_vms
+          stdout, stderr, status = Open3.capture3('floaty', 'list', '--active', '--json', '--service', 'vmpooler')
+          print_and_abort('Failed to get VM list from vmpooler service', stderr, status) unless status.success?
+
+          return [] if stdout.strip.empty?
+
+          data = JSON.parse(stdout)
+          return [] if data.nil? || data.empty?
+
+          data.map do |_short_name, vm_info|
+            {
+              'hostname' => vm_info['fqdn'] || "#{_short_name}.delivery.puppetlabs.net",
+              'type' => vm_info['template']
+            }
+          end
+        end
+
+        def merge_vm_lists(abs_vms, vmpooler_vms)
+          seen = abs_vms.map { |vm| vm['hostname'] }.to_set
+          merged = abs_vms.dup
+          vmpooler_vms.each do |vm|
+            merged << vm unless seen.include?(vm['hostname'])
+          end
+          merged
         end
 
         # Generate the Bolt inventory structure
