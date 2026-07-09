@@ -50,5 +50,11 @@ if inventory_data['groups']&.any? { |g| g['name'] == 'unavailable' && !g['target
   warn "\e[33mWarning: #{count} unavailable VM#{suffix} moved to the 'unavailable' group — check connectivity\e[0m"
 end
 
+# Report the persisted inventory path on stderr for providers that cache
+if options[:provider] == 'vmpooler'
+  cache = BoltDynamicInventory::VmCache.new(provider: options[:provider])
+  warn "Inventory written to #{cache.inventory_path}"
+end
+
 # Output as YAML
 puts inventory_data.to_yaml

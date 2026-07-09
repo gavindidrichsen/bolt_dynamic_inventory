@@ -98,6 +98,7 @@ RSpec.describe BoltDynamicInventory do
     before do
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:read).and_return(nil)
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write)
+      allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write_inventory)
     end
 
     let(:mock_abs_json) do

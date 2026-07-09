@@ -48,7 +48,9 @@ module BoltDynamicInventory
         def generate
           vms = load_vms
           alive, unavailable = partition_by_availability(vms)
-          generate_inventory(alive, unavailable)
+          inventory_data = generate_inventory(alive, unavailable)
+          @cache.write_inventory(inventory_data)
+          inventory_data
         end
 
         private

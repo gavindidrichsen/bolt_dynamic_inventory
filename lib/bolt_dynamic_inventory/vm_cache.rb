@@ -8,12 +8,12 @@ module BoltDynamicInventory
   # TTL-based file cache for provider VM data.
   class VmCache
     DEFAULT_TTL_SECONDS = 86_400 # 24 hours
-    CACHE_DIR = File.join(Dir.home, '.config', 'bolt_dynamic_inventory', 'cache')
+    BASE_DIR = File.join(Dir.home, '.config', 'bolt_dynamic_inventory')
 
     def initialize(provider:, ttl: DEFAULT_TTL_SECONDS)
       @provider = provider
       @ttl = ttl
-      @cache_dir = CACHE_DIR
+      @provider_dir = File.join(BASE_DIR, provider)
     end
 
     def read
@@ -29,7 +29,7 @@ module BoltDynamicInventory
     end
 
     def write(vms)
-      FileUtils.mkdir_p(@cache_dir)
+      FileUtils.mkdir_p(@provider_dir)
       payload = {
         'stored_at' => Time.now.iso8601,
         'provider' => @provider,
@@ -37,6 +37,15 @@ module BoltDynamicInventory
         'vms' => vms
       }
       File.write(cache_path, JSON.pretty_generate(payload))
+    end
+
+    def write_inventory(inventory_data)
+      FileUtils.mkdir_p(@provider_dir)
+      File.write(inventory_path, inventory_data.to_yaml)
+    end
+
+    def inventory_path
+      File.join(@provider_dir, 'inventory.yaml')
     end
 
     def clear
@@ -72,7 +81,7 @@ module BoltDynamicInventory
     private
 
     def cache_path
-      File.join(@cache_dir, "#{@provider}_vms.json")
+      File.join(@provider_dir, 'cache.json')
     end
   end
 end
