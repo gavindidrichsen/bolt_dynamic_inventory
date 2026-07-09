@@ -37,4 +37,4 @@ The plugin now supports both Orbstack and VMPooler VMs with a consistent interfa
 
 **NOTE**: The provider must be specified either in the inventory configuration or via the --provider command-line option.
 
-**Update (2026-07-09)**: The VMPooler provider now queries both ABS and vmpooler services to discover all active VMs (see [[0008-query-both-abs-and-vmpooler-services-to-find-all-active-vms|ADR-0008]]), caches results with smart TTL-based invalidation (see [[0009-cache-vm-data-with-smart-ttl-based-invalidation|ADR-0009]]), and surfaces unreachable VMs in an `unavailable` group (see [[0010-surface-unavailable-vms-in-dedicated-group-instead-of-silently-dropping|ADR-0010]]).
+**Update (2026-07-09)**: The VMPooler provider now queries both ABS and vmpooler services to discover all active VMs (see [[0008-query-both-abs-and-vmpooler-services-to-find-all-active-vms|ADR-0008]]), caches results with smart TTL-based invalidation (see [[0009-cache-vm-data-with-smart-ttl-based-invalidation|ADR-0009]]), and surfaces unreachable VMs in an `unavailable` group (see [[0010-surface-unavailable-vms-in-a-dedicated-group-instead-of-silently-dropping|ADR-0010]]).
