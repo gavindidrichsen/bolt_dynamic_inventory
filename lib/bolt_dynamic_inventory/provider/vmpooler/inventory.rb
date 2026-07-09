@@ -5,6 +5,7 @@ require 'json'
 require 'open3'
 require 'set'
 require 'yaml'
+require 'bolt_dynamic_inventory/vm_cache'
 
 module BoltDynamicInventory
   module Provider
@@ -40,16 +41,28 @@ module BoltDynamicInventory
 
         def initialize(config = {})
           @group_patterns = parse_group_patterns(config['group_patterns'])
+          @refresh = config['refresh'] || false
+          @cache = VmCache.new(provider: 'vmpooler')
         end
 
-        # Generate a Bolt inventory structure from VMPooler VMs
         def generate
-          vms = fetch_vmpooler_vms
+          vms = load_vms
           vms = filter_alive_hosts(vms)
           generate_inventory(vms)
         end
 
         private
+
+        def load_vms
+          unless @refresh
+            cached = @cache.read
+            return cached if cached
+          end
+
+          vms = fetch_vmpooler_vms
+          @cache.write(vms)
+          vms
+        end
 
         def print_and_abort(message, stderr, status)
           error_msg = "#{message} with exit code #{status.exitstatus}"
