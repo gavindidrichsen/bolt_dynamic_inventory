@@ -90,8 +90,8 @@ module BoltDynamicInventory
       hours, remainder = seconds.divmod(3600)
       minutes = remainder / 60
       parts = []
-      parts << "#{hours} hour#{'s' unless hours == 1}" if hours > 0
-      parts << "#{minutes} minute#{'s' unless minutes == 1}" if minutes > 0
+      parts << "#{hours} hour#{'s' unless hours == 1}" if hours.positive?
+      parts << "#{minutes} minute#{'s' unless minutes == 1}" if minutes.positive?
       parts.empty? ? '0 minutes' : parts.join(', ')
     end
 
