@@ -20,8 +20,8 @@ module BoltDynamicInventory
       return nil unless File.exist?(cache_path)
 
       data = JSON.parse(File.read(cache_path))
-      stored_at = Time.parse(data['stored_at'])
-      return nil if Time.now - stored_at > @ttl
+      expires_at = Time.parse(data['expires_at'])
+      return nil if Time.now >= expires_at
 
       data['vms']
     rescue JSON::ParserError, TypeError, ArgumentError
@@ -30,10 +30,14 @@ module BoltDynamicInventory
 
     def write(vms)
       FileUtils.mkdir_p(@provider_dir)
+      now = Time.now
+      effective_ttl = effective_ttl_for(vms, now)
+      expires_at = now + effective_ttl
       payload = {
-        'stored_at' => Time.now.iso8601,
+        'stored_at' => now.iso8601,
+        'expires_at' => expires_at.iso8601,
+        'expires_in' => humanize_duration(effective_ttl),
         'provider' => @provider,
-        'ttl_seconds' => @ttl,
         'vms' => vms
       }
       File.write(cache_path, JSON.pretty_generate(payload))
@@ -41,7 +45,8 @@ module BoltDynamicInventory
 
     def write_inventory(inventory_data)
       FileUtils.mkdir_p(@provider_dir)
-      File.write(inventory_path, inventory_data.to_yaml)
+      header = inventory_header
+      File.write(inventory_path, header + inventory_data.to_yaml)
     end
 
     def inventory_path
@@ -72,13 +77,53 @@ module BoltDynamicInventory
       return false unless File.exist?(cache_path)
 
       data = JSON.parse(File.read(cache_path))
-      stored_at = Time.parse(data['stored_at'])
-      Time.now - stored_at <= @ttl
+      expires_at = Time.parse(data['expires_at'])
+      Time.now < expires_at
     rescue JSON::ParserError, TypeError, ArgumentError
       false
     end
 
     private
+
+    def humanize_duration(seconds)
+      seconds = seconds.to_i
+      hours, remainder = seconds.divmod(3600)
+      minutes = remainder / 60
+      parts = []
+      parts << "#{hours} hour#{'s' unless hours == 1}" if hours > 0
+      parts << "#{minutes} minute#{'s' unless minutes == 1}" if minutes > 0
+      parts.empty? ? '0 minutes' : parts.join(', ')
+    end
+
+    def inventory_header
+      return '' unless File.exist?(cache_path)
+
+      data = JSON.parse(File.read(cache_path))
+      stored = data['stored_at']
+      expires = data['expires_at']
+      "# created: #{stored}\n# expires: #{expires}\n"
+    rescue JSON::ParserError, TypeError
+      ''
+    end
+
+    def effective_ttl_for(vms, now)
+      earliest_reap = earliest_vm_reap_time(vms)
+      return @ttl unless earliest_reap
+
+      vm_remaining = (earliest_reap - now).to_i
+      return @ttl if vm_remaining <= 0
+
+      [vm_remaining, @ttl].min
+    end
+
+    def earliest_vm_reap_time(vms)
+      reap_times = vms.filter_map do |vm|
+        Time.parse(vm['ttl']) if vm['ttl']
+      rescue ArgumentError
+        nil
+      end
+      reap_times.min
+    end
 
     def cache_path
       File.join(@provider_dir, 'cache.json')
