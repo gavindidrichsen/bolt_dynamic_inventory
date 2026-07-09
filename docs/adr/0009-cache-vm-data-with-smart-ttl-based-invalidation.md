@@ -106,14 +106,14 @@ end
 - `@cache.read` returns `nil` if the cache file is missing or older than 24 hours
 - `any_vm_expired?` checks each VM's `ttl` against `Time.now` — if any VM has been reaped, we refetch
 
-The cache is stored in `~/.bolt_dynamic_inventory/cache/vmpooler_vms.json` as a JSON payload with a `stored_at` timestamp, the provider name, and the full VM list.
+The cache is stored in `~/.config/bolt_dynamic_inventory/cache/vmpooler_vms.json` as a JSON payload with a `stored_at` timestamp, the provider name, and the full VM list.
 
 ## Consequences
 
 - `binv` returns instantly on repeated calls within the cache window, making it practical for scripts and tab-completion workflows
 - Accuracy is maintained: the cache self-invalidates when any VM's TTL expires, so reaped VMs never persist in the inventory
 - The `--refresh` flag provides an escape hatch when the user knows the VM set has changed (e.g., immediately after provisioning)
-- Cache files accumulate in `~/.bolt_dynamic_inventory/cache/` — there is no automatic cleanup of old cache files from other providers
+- Cache files accumulate in `~/.config/bolt_dynamic_inventory/cache/` — there is no automatic cleanup of old cache files from other providers
 - The 24-hour default TTL is a conservative fallback; most invalidation in practice comes from the VM expiry check
 
 ## Related Topics

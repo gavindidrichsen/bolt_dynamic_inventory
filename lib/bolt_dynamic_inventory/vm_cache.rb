@@ -5,9 +5,10 @@ require 'fileutils'
 require 'time'
 
 module BoltDynamicInventory
+  # TTL-based file cache for provider VM data.
   class VmCache
     DEFAULT_TTL_SECONDS = 86_400 # 24 hours
-    CACHE_DIR = File.join(Dir.home, '.bolt_dynamic_inventory', 'cache')
+    CACHE_DIR = File.join(Dir.home, '.config', 'bolt_dynamic_inventory', 'cache')
 
     def initialize(provider:, ttl: DEFAULT_TTL_SECONDS)
       @provider = provider
@@ -39,7 +40,7 @@ module BoltDynamicInventory
     end
 
     def clear
-      File.delete(cache_path) if File.exist?(cache_path)
+      FileUtils.rm_f(cache_path)
     end
 
     def any_vm_expired?(vms)

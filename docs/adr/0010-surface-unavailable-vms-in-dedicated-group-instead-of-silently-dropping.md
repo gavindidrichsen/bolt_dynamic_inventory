@@ -111,6 +111,7 @@ end
 - Users can see at a glance which VMs are allocated but unreachable, making connectivity debugging straightforward
 - Bolt plans can explicitly handle unavailable targets (e.g., skip them, wait and retry, or alert)
 - The `unavailable` group name is reserved — it cannot be used as a regex group pattern name
+- `binv` emits a yellow warning to stderr when unavailable VMs are present, so the user is immediately alerted without disrupting stdout (which remains valid YAML)
 - The inventory output is slightly larger when VMs are unreachable, but this is a worthwhile trade for visibility
 
 ## Related Topics

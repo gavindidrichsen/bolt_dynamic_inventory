@@ -80,8 +80,7 @@ module BoltDynamicInventory
 
           active_hostnames = stdout.lines
                                    .grep(/^Nmap scan report for/)
-                                   .map { |line| line.match(/^Nmap scan report for (\S+)/)[1] }
-                                   .to_set
+                                   .to_set { |line| line.match(/^Nmap scan report for (\S+)/)[1] }
 
           alive = vms.select { |vm| active_hostnames.include?(vm['hostname']) }
           unavailable = vms.reject { |vm| active_hostnames.include?(vm['hostname']) }
