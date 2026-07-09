@@ -12,12 +12,6 @@
 
 <!-- howtologstop -->
 
-### Tutorials
-
-<!-- tutoriallog -->
-
-<!-- tutoriallogstop -->
-
 ### Design Decisions
 
 <!-- adrlog -->
@@ -28,4 +22,7 @@
 * [ADR-0005](adr/0005-add-role-fact-that-matches-the-group-name-making-puppet-switching-easier.md) - Add 'role' fact that matches the group name making puppet switching easier
 * [ADR-0006](adr/0006-extend-the-plugin-to-handle-not-only-orbstack-but-vmpooler-as-well.md) - Extend the plugin to handle not only orbstack but vmpooler as well
 * [ADR-0007](adr/0007-use-nmap-ssh-port-scan-for-vmpooler-vm-connectivity-filtering.md) - Use nmap SSH port scan for VMPooler VM connectivity filtering
+* [ADR-0008](adr/0008-query-both-abs-and-vmpooler-services-to-find-all-active-vms.md) - query-both-abs-and-vmpooler-services-to-find-all-active-vms
+* [ADR-0009](adr/0009-cache-vm-data-with-smart-ttl-based-invalidation.md) - cache-vm-data-with-smart-ttl-based-invalidation
+* [ADR-0010](adr/0010-surface-unavailable-vms-in-dedicated-group-instead-of-silently-dropping.md) - surface-unavailable-vms-in-dedicated-group-instead-of-silently-dropping
 <!-- adrlogstop -->
