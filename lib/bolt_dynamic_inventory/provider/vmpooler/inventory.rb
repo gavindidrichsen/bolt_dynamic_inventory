@@ -158,8 +158,8 @@ module BoltDynamicInventory
 
         def generate_inventory(alive_vms, unavailable_vms)
           targets = extract_targets(alive_vms + unavailable_vms)
-          alive_names = alive_vms.map { |vm| vm['hostname'].split('.').first }
-          unavailable_names = unavailable_vms.map { |vm| vm['hostname'].split('.').first }
+          alive_names = sorted_hostnames(alive_vms)
+          unavailable_names = sorted_hostnames(unavailable_vms)
 
           alive_targets = targets.select { |t| alive_names.include?(t['name']) }
           windows_targets, linux_targets = partition_targets_by_type(alive_targets)
@@ -174,8 +174,12 @@ module BoltDynamicInventory
           }
         end
 
+        def sorted_hostnames(vms)
+          vms.map { |vm| vm['hostname'].split('.').first }.sort
+        end
+
         def extract_targets(vms)
-          vms.map do |vm|
+          targets = vms.map do |vm|
             vars = { 'type' => vm['type'] }
             vars['ttl'] = vm['ttl'] if vm['ttl']
             {
@@ -184,6 +188,7 @@ module BoltDynamicInventory
               'vars' => vars
             }
           end
+          targets.sort_by { |t| t['name'] }
         end
 
         def partition_targets_by_type(targets_with_type)

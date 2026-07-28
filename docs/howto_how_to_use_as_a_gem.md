@@ -161,14 +161,14 @@ Vmpooler output:
 ➜  bolt_dynamic_inventory git:(development) ✗ bundle exec binv --provider=vmpooler --groups "agent:tender|normal"
 ---
 targets:
+- name: normal-meddling
+  uri: normal-meddling.delivery.puppetlabs.net
 - name: onetime-algebra
   uri: onetime-algebra.delivery.puppetlabs.net
 - name: stiff-boulevard
   uri: stiff-boulevard.delivery.puppetlabs.net
 - name: tender-punditry
   uri: tender-punditry.delivery.puppetlabs.net
-- name: normal-meddling
-  uri: normal-meddling.delivery.puppetlabs.net
 - name: unimposing-poll
   uri: unimposing-poll.delivery.puppetlabs.net
 groups:
@@ -201,13 +201,13 @@ groups:
   facts:
     role: linux
   targets:
-  - tender-punditry
   - normal-meddling
+  - tender-punditry
 - name: agent
   facts:
     role: agent
   targets:
-  - tender-punditry
   - normal-meddling
+  - tender-punditry
 ➜  bolt_dynamic_inventory git:(development) ✗
 ```
