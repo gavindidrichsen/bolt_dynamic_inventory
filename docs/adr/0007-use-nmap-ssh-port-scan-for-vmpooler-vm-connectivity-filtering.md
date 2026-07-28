@@ -1,3 +1,8 @@
+---
+tags:
+  - -scope/implementation
+---
+
 # 7. Use nmap SSH port scan for VMPooler VM connectivity filtering
 
 Date: 2025-10-28

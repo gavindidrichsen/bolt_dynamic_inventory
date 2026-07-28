@@ -1,6 +1,7 @@
 {
   "default": "docs",
-  "readme": "docs/README.md",
+  "readme": "README.md",
   "adr": "docs/adr",
+  "wow": "docs/wow",
   "projects": "docs/_gtd"
 }
