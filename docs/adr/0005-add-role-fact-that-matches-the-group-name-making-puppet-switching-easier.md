@@ -1,3 +1,8 @@
+---
+tags:
+  - -scope/implementation
+---
+
 # 5. Add 'role' fact that matches the group name making puppet switching easier
 
 Date: 2025-02-02

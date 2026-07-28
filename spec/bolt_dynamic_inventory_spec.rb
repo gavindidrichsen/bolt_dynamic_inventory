@@ -24,10 +24,10 @@ RSpec.describe BoltDynamicInventory do
   describe BoltDynamicInventory::Provider::Orbstack::Inventory do
     let(:mock_orbs) do
       [
-        { 'name' => 'agent01', 'status' => 'running' },
-        { 'name' => 'agent02', 'status' => 'running' },
+        { 'name' => 'webserver01', 'status' => 'running' },
         { 'name' => 'compiler01', 'status' => 'running' },
-        { 'name' => 'webserver01', 'status' => 'running' }
+        { 'name' => 'agent02', 'status' => 'running' },
+        { 'name' => 'agent01', 'status' => 'running' }
       ]
     end
 
@@ -64,6 +64,14 @@ RSpec.describe BoltDynamicInventory do
           'run-as' => 'root',
           'user' => 'root',
           'port' => 32_222
+        )
+      end
+
+      it 'sorts targets alphabetically by name' do
+        result = inventory.generate
+
+        expect(result['targets'].map { |t| t['name'] }).to eq(
+          %w[agent01 agent02 compiler01 webserver01]
         )
       end
     end
@@ -293,6 +301,12 @@ RSpec.describe BoltDynamicInventory do
         expect(result['targets'].length).to eq(3)
         expect(result['targets'].map { |t| t['name'] }).to contain_exactly(
           'onetime-algebra', 'tender-punditry', 'normal-meddling'
+        )
+      end
+
+      it 'sorts targets alphabetically by name' do
+        expect(result['targets'].map { |t| t['name'] }).to eq(
+          %w[normal-meddling onetime-algebra tender-punditry]
         )
       end
 

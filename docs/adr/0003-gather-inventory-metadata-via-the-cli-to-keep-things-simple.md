@@ -1,3 +1,8 @@
+---
+tags:
+  - -scope/implementation
+---
+
 # 3. Gather inventory metadata via the cli to keep things simple
 
 Date: 2025-01-10

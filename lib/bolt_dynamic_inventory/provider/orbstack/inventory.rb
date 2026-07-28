@@ -64,18 +64,19 @@ module BoltDynamicInventory
         end
 
         def generate_targets(orbs)
-          orbs.map do |orb|
+          targets = orbs.map do |orb|
             {
               'name' => orb['name'],
               'uri' => "#{orb['name']}@orb"
             }
           end
+          targets.sort_by { |t| t['name'] }
         end
 
         def generate_groups(orbs)
           return [] if @group_patterns.empty?
 
-          target_names = orbs.map { |orb| orb['name'] }
+          target_names = orbs.map { |orb| orb['name'] }.sort
 
           @group_patterns.each_with_object([]) do |pattern, groups|
             matching_targets = target_names.grep(pattern[:regex])
