@@ -45,15 +45,20 @@ bundle exec binv --provider=vmpooler
 ➜  bolt_dynamic_inventory git:(development) ✗ bundle exec binv --provider=vmpooler
 ---
 targets:
-- name: onetime-algebra
+- name: onetime-algebra.delivery.puppetlabs.net
+  alias: onetime-algebra
   uri: onetime-algebra.delivery.puppetlabs.net
-- name: stiff-boulevard
+- name: stiff-boulevard.delivery.puppetlabs.net
+  alias: stiff-boulevard
   uri: stiff-boulevard.delivery.puppetlabs.net
-- name: tender-punditry
+- name: tender-punditry.delivery.puppetlabs.net
+  alias: tender-punditry
   uri: tender-punditry.delivery.puppetlabs.net
-- name: normal-meddling
+- name: normal-meddling.delivery.puppetlabs.net
+  alias: normal-meddling
   uri: normal-meddling.delivery.puppetlabs.net
-- name: unimposing-poll
+- name: unimposing-poll.delivery.puppetlabs.net
+  alias: unimposing-poll
   uri: unimposing-poll.delivery.puppetlabs.net
 groups:
 - name: windows
@@ -68,9 +73,9 @@ groups:
   facts:
     role: windows
   targets:
-  - onetime-algebra
-  - stiff-boulevard
-  - unimposing-poll
+  - onetime-algebra.delivery.puppetlabs.net
+  - stiff-boulevard.delivery.puppetlabs.net
+  - unimposing-poll.delivery.puppetlabs.net
 - name: linux
   config:
     transport: ssh
@@ -85,7 +90,7 @@ groups:
   facts:
     role: linux
   targets:
-  - tender-punditry
-  - normal-meddling
+  - tender-punditry.delivery.puppetlabs.net
+  - normal-meddling.delivery.puppetlabs.net
 ➜  bolt_dynamic_inventory git:(development) ✗
 ```
