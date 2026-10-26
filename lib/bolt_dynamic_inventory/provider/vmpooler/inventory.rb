@@ -158,8 +158,9 @@ module BoltDynamicInventory
 
         def generate_inventory(alive_vms, unavailable_vms)
           targets = extract_targets(alive_vms + unavailable_vms)
-          alive_names = sorted_hostnames(alive_vms)
-          unavailable_names = sorted_hostnames(unavailable_vms)
+          # Target names are FQDNs so peadm sets the certname to the long hostname
+          alive_names = alive_vms.map { |vm| vm['hostname'] }.sort
+          unavailable_names = unavailable_vms.map { |vm| vm['hostname'] }.sort
 
           alive_targets = targets.select { |t| alive_names.include?(t['name']) }
           windows_targets, linux_targets = partition_targets_by_type(alive_targets)
@@ -174,16 +175,13 @@ module BoltDynamicInventory
           }
         end
 
-        def sorted_hostnames(vms)
-          vms.map { |vm| vm['hostname'].split('.').first }.sort
-        end
-
         def extract_targets(vms)
           targets = vms.map do |vm|
             vars = { 'type' => vm['type'] }
             vars['ttl'] = vm['ttl'] if vm['ttl']
             {
-              'name' => vm['hostname'].split('.').first,
+              'name' => vm['hostname'],
+              'alias' => vm['hostname'].split('.').first,
               'uri' => vm['hostname'],
               'vars' => vars
             }
@@ -234,7 +232,8 @@ module BoltDynamicInventory
           @group_patterns.map do |pattern|
             {
               'name' => pattern[:group],
-              'targets' => target_names.grep(pattern[:regex]),
+              # patterns match the short name so existing regexes keep working
+              'targets' => target_names.select { |n| n.split('.').first.match?(pattern[:regex]) },
               'facts' => { 'role' => pattern[:group] }
             }
           end
