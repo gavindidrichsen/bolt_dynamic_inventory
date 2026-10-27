@@ -125,20 +125,23 @@ module BoltDynamicInventory
           return [] if data.nil? || data.empty?
 
           now = Time.now
-          data.map do |short_name, vm_info|
-            vm = {
-              'hostname' => vm_info['fqdn'] || "#{short_name}.delivery.puppetlabs.net",
-              'type' => vm_info['template']
-            }
-            lifetime = vm_info['lifetime']
-            running = vm_info['running']
-            if lifetime && running
-              remaining_hours = lifetime.to_f - running.to_f
-              reap_time = now + (remaining_hours * 3600)
-              vm['ttl'] = reap_time.strftime('%Y-%m-%d %H:%M')
-            end
-            vm
-          end
+          data.map { |short_name, vm_info| vmpooler_vm_entry(short_name, vm_info, now) }
+        end
+
+        def vmpooler_vm_entry(short_name, vm_info, now)
+          vm = {
+            'hostname' => vm_info['fqdn'] || "#{short_name}.delivery.puppetlabs.net",
+            'type' => vm_info['template']
+          }
+          # vmpooler lists snapshot ids only for VMs that have one
+          vm['snapshots'] = vm_info['snapshots'] if vm_info['snapshots'] && !vm_info['snapshots'].empty?
+          vm['ttl'] = reap_time(vm_info, now) if vm_info['lifetime'] && vm_info['running']
+          vm
+        end
+
+        def reap_time(vm_info, now)
+          remaining_hours = vm_info['lifetime'].to_f - vm_info['running'].to_f
+          (now + (remaining_hours * 3600)).strftime('%Y-%m-%d %H:%M')
         end
 
         def merge_vm_lists(abs_vms, vmpooler_vms)
@@ -146,11 +149,8 @@ module BoltDynamicInventory
 
           merged = abs_vms.map do |abs_vm|
             vmpooler_vm = vmpooler_by_host.delete(abs_vm['hostname'])
-            if vmpooler_vm && vmpooler_vm['ttl']
-              abs_vm.merge('ttl' => vmpooler_vm['ttl'])
-            else
-              abs_vm
-            end
+            # ttl and snapshots only come from the vmpooler service, so copy them onto the ABS entry
+            vmpooler_vm ? abs_vm.merge(vmpooler_vm.slice('ttl', 'snapshots')) : abs_vm
           end
 
           merged.concat(vmpooler_by_host.values)
@@ -179,6 +179,7 @@ module BoltDynamicInventory
           targets = vms.map do |vm|
             vars = { 'type' => vm['type'] }
             vars['ttl'] = vm['ttl'] if vm['ttl']
+            vars['snapshots'] = vm['snapshots'] if vm['snapshots']
             {
               'name' => vm['hostname'],
               'alias' => vm['hostname'].split('.').first,
