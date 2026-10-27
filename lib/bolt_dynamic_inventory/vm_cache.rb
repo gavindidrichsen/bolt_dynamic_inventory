@@ -53,6 +53,10 @@ module BoltDynamicInventory
       File.join(@provider_dir, 'inventory.yaml')
     end
 
+    def groups_path
+      File.join(@provider_dir, 'groups.yaml')
+    end
+
     def clear
       FileUtils.rm_f(cache_path)
     end

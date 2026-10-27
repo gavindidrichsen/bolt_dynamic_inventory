@@ -5,7 +5,7 @@ require 'bolt_dynamic_inventory'
 require 'yaml'
 require 'optparse'
 
-options = { group_patterns: [], provider: 'orbstack', refresh: false }
+options = { group_patterns: [], provider: 'orbstack', refresh: false, force: false }
 
 # Parse command line options
 OptionParser.new do |opts|
@@ -17,6 +17,10 @@ OptionParser.new do |opts|
       group, regex = pattern.split(':', 2)
       { 'group' => group, 'regex' => regex }
     end
+  end
+
+  opts.on('-f', '--force', 'Replace an existing global group of the same name when using -g') do
+    options[:force] = true
   end
 
   opts.on('-p', '--provider PROVIDER', String,
@@ -37,7 +41,8 @@ end.parse!
 # Create an instance of your inventory class with the group patterns
 inventory = BoltDynamicInventory.new({ 'provider' => options[:provider],
                                        'group_patterns' => options[:group_patterns],
-                                       'refresh' => options[:refresh] })
+                                       'refresh' => options[:refresh],
+                                       'force' => options[:force] })
 
 # Generate the inventory
 inventory_data = inventory.generate
