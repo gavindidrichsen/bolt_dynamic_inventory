@@ -56,7 +56,7 @@ For a complete listing of various how-to guides and design decisions, see the [d
 * [ADR-0010](docs/adr/0010-surface-unavailable-vms-in-a-dedicated-group-instead-of-silently-dropping.md) - Surface unavailable VMs in a dedicated group instead of silently dropping
 * [ADR-0011](docs/adr/0011-name-vmpooler-targets-by-fqdn-with-the-short-name-as-an-alias.md) - Name VMPooler targets by FQDN with the short name as an alias
 * [ADR-0012](docs/adr/0012-list-vmpooler-snapshot-ids-in-target-vars.md) - List VMPooler snapshot ids in target vars
-* [ADR-0013](docs/adr/0013-persist-vmpooler-groups-in-a-global-and-a-local-groups-yaml.md) - Persist VMPooler groups in a global and a local groups.yaml
+* [ADR-0013](docs/adr/0013-persist-vmpooler-groups-in-a-global-groups-yaml-loaded-by-bolt.md) - Persist VMPooler groups in a global groups.yaml loaded by Bolt
 <!-- adrlogstop -->
 
 ### How-To Guides
