@@ -45,7 +45,7 @@ module BoltDynamicInventory
           @refresh = config['refresh'] || false
           @force = config['force'] || false
           @cache = VmCache.new(provider: 'vmpooler')
-          @groups = Groups.new(global_path: @cache.groups_path)
+          @groups = Groups.new(path: @cache.groups_path)
         end
 
         def generate
@@ -170,8 +170,10 @@ module BoltDynamicInventory
 
           groups = base_groups(windows_targets, linux_targets)
           groups << unavailable_group(unavailable_names) unless unavailable_names.empty?
-          groups.concat(@groups.sync(all_names: alive_names + unavailable_names, alive_names: alive_names,
-                                     patterns: @group_patterns, force: @force))
+          # the groups file must exist before Bolt loads it, so it is written before the inventory
+          @groups.sync(all_names: alive_names + unavailable_names, alive_names: alive_names,
+                       patterns: @group_patterns, force: @force)
+          groups << @groups.plugin_entry
 
           {
             'targets' => targets,

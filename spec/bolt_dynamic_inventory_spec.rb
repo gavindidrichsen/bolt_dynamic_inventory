@@ -107,10 +107,9 @@ RSpec.describe BoltDynamicInventory do
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:read).and_return(nil)
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write)
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write_inventory)
-      # keep the persisted groups.yaml out of the real home and cwd
+      # keep the persisted groups.yaml out of the real home
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:groups_path)
         .and_return(File.join(groups_dir, 'groups.yaml'))
-      allow(Dir).to receive(:pwd).and_return(groups_dir)
     end
 
     after { FileUtils.remove_entry(groups_dir) }
@@ -279,7 +278,7 @@ RSpec.describe BoltDynamicInventory do
         )
       end
 
-      it 'generates inventory with empty regex-based groups' do
+      it 'generates an empty custom group in groups.yaml' do
         inventory = described_class.new(
           'group_patterns' => [
             { 'group' => 'agent', 'pattern' => 'tender|normal' }
@@ -287,9 +286,9 @@ RSpec.describe BoltDynamicInventory do
         )
         result = inventory.generate
 
-        agent_group = result['groups'].find { |g| g['name'] == 'agent' }
-        expect(agent_group['targets']).to eq([])
-        expect(agent_group['facts']).to eq('role' => 'agent')
+        expect(result['groups'].map { |g| g['name'] || g['_plugin'] }).to eq(%w[windows linux yaml])
+        saved = YAML.safe_load_file(File.join(groups_dir, 'groups.yaml'))['groups']
+        expect(saved.find { |g| g['name'] == 'agent' }['targets']).to eq([])
       end
     end
 
@@ -377,7 +376,7 @@ RSpec.describe BoltDynamicInventory do
         )
       end
 
-      it 'generates inventory with both base and regex-based groups when patterns are provided' do
+      it 'keeps custom groups in groups.yaml and loads them with the yaml plugin' do
         inventory = described_class.new(
           'group_patterns' => [
             { 'group' => 'agent', 'pattern' => 'tender|normal' }
@@ -385,10 +384,11 @@ RSpec.describe BoltDynamicInventory do
         )
         result = inventory.generate
 
-        expect(result['groups'].find { |g| g['name'] == 'windows' }).not_to be_nil
-        expect(result['groups'].find { |g| g['name'] == 'linux' }).not_to be_nil
+        expect(result['groups'].map { |g| g['name'] || g['_plugin'] }).to eq(%w[windows linux yaml])
+        expect(result['groups'].last['filepath']).to end_with('groups.yaml')
 
-        agent_group = result['groups'].find { |g| g['name'] == 'agent' }
+        saved = YAML.safe_load_file(File.join(groups_dir, 'groups.yaml'))['groups']
+        agent_group = saved.find { |g| g['name'] == 'agent' }
         expect(agent_group['targets']).to contain_exactly('tender-punditry.delivery.puppetlabs.net',
                                                           'normal-meddling.delivery.puppetlabs.net')
         expect(agent_group['facts']).to eq('role' => 'agent')
