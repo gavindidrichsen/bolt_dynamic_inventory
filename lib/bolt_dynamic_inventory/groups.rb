@@ -8,7 +8,8 @@ module BoltDynamicInventory
   # See docs/adr/0013-persist-vmpooler-groups-in-a-global-groups-yaml-loaded-by-bolt.md
   class Groups
     GLOBAL = 'global'
-    RESERVED = %w[windows linux unavailable].freeze
+    UNGROUPED = 'ungrouped'
+    RESERVED = %w[windows linux unavailable ungrouped].freeze
 
     def initialize(path:, prompter: nil)
       @path = path
@@ -20,8 +21,7 @@ module BoltDynamicInventory
       groups = read
       add_patterns(groups, patterns, alive_names, force)
       prune!(groups, all_names)
-      write([{ 'name' => GLOBAL, 'targets' => all_names.sort }] + groups)
-      report_unassigned(groups, all_names)
+      write([{ 'name' => GLOBAL, 'targets' => all_names.sort }, ungrouped(groups, all_names)] + groups)
     end
 
     # The inventory group entry that makes Bolt load the file
@@ -38,7 +38,7 @@ module BoltDynamicInventory
       # the file is a plain list for the yaml plugin; an older 'groups:' hash is still read
       list = data.is_a?(Hash) ? data['groups'] : data
       # 'pattern' is not a Bolt group key; older files carried it, so it is dropped on read
-      Array(list).reject { |g| g['name'] == GLOBAL }.map { |g| g.except('pattern') }
+      Array(list).reject { |g| [GLOBAL, UNGROUPED].include?(g['name']) }.map { |g| g.except('pattern') }
     end
 
     def write(groups)
@@ -78,11 +78,9 @@ module BoltDynamicInventory
       groups.each { |g| g['targets'] = Array(g['targets']) & all_names }
     end
 
-    def report_unassigned(groups, all_names)
-      return if groups.empty?
-
-      free = all_names - groups.flat_map { |g| Array(g['targets']) }
-      warn "Not in any group: #{free.join(', ')}" unless free.empty?
+    # VMs in no custom group, rebuilt on every run so new VMs stand out
+    def ungrouped(groups, all_names)
+      { 'name' => UNGROUPED, 'targets' => (all_names - groups.flat_map { |g| Array(g['targets']) }).sort }
     end
 
     # Asks only on a terminal; otherwise drops and says so

@@ -40,10 +40,10 @@ RSpec.describe BoltDynamicInventory::Groups do
     File.write(path, list.to_yaml)
   end
 
-  it 'creates the file with global first, as the yaml plugin needs it to exist' do
+  it 'creates the file with global first, then ungrouped, as the yaml plugin needs it to exist' do
     sync
 
-    expect(saved).to eq([{ 'name' => 'global', 'targets' => all_names.sort }])
+    expect(saved.map { |g| g['name'] }).to eq(%w[global ungrouped])
   end
 
   it 'writes a plain list of groups, as the yaml plugin returns the file as the group list' do
@@ -56,7 +56,7 @@ RSpec.describe BoltDynamicInventory::Groups do
     FileUtils.mkdir_p(File.dirname(path))
     File.write(path, { 'groups' => [{ 'name' => 'agents', 'targets' => ['a1.x.net'] }] }.to_yaml)
 
-    expect(sync.map { |g| g['name'] }).to eq(%w[global agents])
+    expect(sync.map { |g| g['name'] }).to eq(%w[global ungrouped agents])
   end
 
   it 'points Bolt at the file with the yaml plugin' do
@@ -95,7 +95,7 @@ RSpec.describe BoltDynamicInventory::Groups do
   it 'refuses names that clash with the built-in groups' do
     sync(patterns: [{ group: 'linux', regex: /^a/ }, { group: 'global', regex: /^a/ }])
 
-    expect(saved.map { |g| g['name'] }).to eq(['global'])
+    expect(saved.map { |g| g['name'] }).to eq(%w[global ungrouped])
   end
 
   it 'rebuilds global from the current VMs' do
@@ -130,11 +130,30 @@ RSpec.describe BoltDynamicInventory::Groups do
     expect(targets('agents')).to eq(['a1.x.net'])
   end
 
-  it 'names the VMs that are in no group' do
+  it 'lists the VMs that are in no custom group in ungrouped' do
     write_groups([{ 'name' => 'agents', 'targets' => ['a1.x.net'] }])
     sync
 
-    expect(groups).to have_received(:warn).with(/Not in any group: a2.x.net, b1.x.net, p1.x.net/)
+    expect(targets('ungrouped')).to eq(%w[a2.x.net b1.x.net p1.x.net])
+  end
+
+  it 'puts every VM in ungrouped when global is the only group' do
+    sync
+
+    expect(targets('ungrouped')).to eq(all_names.sort)
+  end
+
+  it 'leaves ungrouped empty once every VM is in a group' do
+    write_groups([{ 'name' => 'all', 'targets' => all_names }])
+    sync
+
+    expect(targets('ungrouped')).to eq([])
+  end
+
+  it 'refuses ungrouped as a -g group name' do
+    sync(patterns: [{ group: 'ungrouped', regex: /^a/ }])
+
+    expect(groups).to have_received(:warn).with(/reserved/)
   end
 
   describe 'the file shape' do
