@@ -37,22 +37,13 @@ module BoltDynamicInventory
       data = YAML.safe_load_file(@path)
       # the file is a plain list for the yaml plugin; an older 'groups:' hash is still read
       list = data.is_a?(Hash) ? data['groups'] : data
-      Array(list).reject { |g| g['name'] == GLOBAL }
+      # 'pattern' is not a Bolt group key; older files carried it, so it is dropped on read
+      Array(list).reject { |g| g['name'] == GLOBAL }.map { |g| g.except('pattern') }
     end
 
     def write(groups)
       FileUtils.mkdir_p(File.dirname(@path))
-      File.write(@path, "#{header(groups)}#{groups.to_yaml.delete_prefix("---\n")}")
-    end
-
-    # The comment is rebuilt from each group's pattern on every write, so it matches hand edits
-    def header(groups)
-      args = groups.filter_map { |g| "#{g['name']}:#{g['pattern']}" if g['pattern'] }.join(',')
-      lines = ['# Recreate these groups (global is always kept, never part of -g):',
-               "#   binvv --refresh -g \"#{args.gsub(/[\\"$`]/) { |c| "\\#{c}" }}\""]
-      manual = groups.reject { |g| g['pattern'] || g['name'] == GLOBAL }.map { |g| g['name'] }
-      lines << "# Without a pattern (kept by hand): #{manual.join(', ')}" unless manual.empty?
-      "#{lines.join("\n")}\n"
+      File.write(@path, groups.to_yaml)
     end
 
     # -g creates groups here and never overwrites a name without --force
@@ -71,8 +62,7 @@ module BoltDynamicInventory
     def new_group(pattern, alive_names)
       # patterns match the short name so existing regexes keep working
       targets = alive_names.select { |n| n.split('.').first.match?(pattern[:regex]) }
-      { 'name' => pattern[:group], 'pattern' => pattern[:regex].source, 'targets' => targets,
-        'facts' => { 'role' => pattern[:group] } }
+      { 'name' => pattern[:group], 'targets' => targets, 'facts' => { 'role' => pattern[:group] } }
     end
 
     # Drops targets no longer in 'global' (after asking); empty groups are kept

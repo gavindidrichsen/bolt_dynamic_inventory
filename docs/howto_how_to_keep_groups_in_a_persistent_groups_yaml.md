@@ -24,7 +24,7 @@ binvv -g "2agents:^(kind|unborn|usual)" --force > inventory.yaml
 bolt inventory show --targets 2agents
 ```
 
-The groups live only in `~/.config/bolt_dynamic_inventory/vmpooler/groups.yaml`; `inventory.yaml` loads that file with Bolt's `yaml` plugin, so the same groups work from any project. The first lines of the file hold the `binvv --refresh -g "..."` command that recreates them. To change a group by hand, edit its `targets` there; the command is rewritten on the next run.
+The groups live only in `~/.config/bolt_dynamic_inventory/vmpooler/groups.yaml`; `inventory.yaml` loads that file with Bolt's `yaml` plugin, so the same groups work from any project. To change a group by hand, edit its `targets` there; `binvv --refresh` keeps `global` current and drops VMs that no longer exist.
 
 What to expect on each run:
 

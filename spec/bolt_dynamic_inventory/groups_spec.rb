@@ -63,10 +63,10 @@ RSpec.describe BoltDynamicInventory::Groups do
     expect(groups.plugin_entry).to eq('_plugin' => 'yaml', 'filepath' => path.sub(Dir.home, '~'))
   end
 
-  it 'persists a -g group with its pattern and role fact' do
+  it 'persists a -g group with its role fact and no pattern key (Bolt rejects unknown group keys)' do
     sync(patterns: [{ group: 'agents', regex: /^a/ }])
 
-    expect(saved.last).to eq('name' => 'agents', 'pattern' => '^a', 'targets' => %w[a1.x.net a2.x.net],
+    expect(saved.last).to eq('name' => 'agents', 'targets' => %w[a1.x.net a2.x.net],
                              'facts' => { 'role' => 'agents' })
   end
 
@@ -137,30 +137,18 @@ RSpec.describe BoltDynamicInventory::Groups do
     expect(groups).to have_received(:warn).with(/Not in any group: a2.x.net, b1.x.net, p1.x.net/)
   end
 
-  describe 'the header comment' do
-    it 'holds the -g command that recreates the groups, rebuilt from the patterns on every write' do
-      sync(patterns: [{ group: 'agents', regex: /^(a|b)/ }])
-      write_groups(saved.reject { |g| g['name'] == 'global' } + [{ 'name' => 'p', 'pattern' => '^p', 'targets' => [] }])
-      sync
+  describe 'the file shape' do
+    it 'has no header comment and no pattern key' do
+      sync(patterns: [{ group: 'agents', regex: /^a/ }])
 
-      expect(File.read(path)).to start_with(<<~HEAD)
-        # Recreate these groups (global is always kept, never part of -g):
-        #   binvv --refresh -g "agents:^(a|b),p:^p"
-      HEAD
+      expect(File.read(path)).to start_with("---\n").and(satisfy { |t| !t.include?('pattern') })
     end
 
-    it 'lists hand-made groups that have no pattern' do
-      write_groups([{ 'name' => 'mine', 'targets' => [] }])
+    it 'drops a pattern key left by an older file' do
+      write_groups([{ 'name' => 'old', 'pattern' => '^o', 'targets' => [] }])
       sync
 
-      expect(File.read(path)).to include('# Without a pattern (kept by hand): mine')
-    end
-
-    it 'escapes characters the shell would expand' do
-      write_groups([{ 'name' => 'e', 'pattern' => 'a$', 'targets' => [] }])
-      sync
-
-      expect(File.read(path)).to include('-g "e:a\\$"')
+      expect(saved.find { |g| g['name'] == 'old' }).to eq('name' => 'old', 'targets' => [])
     end
   end
 end
