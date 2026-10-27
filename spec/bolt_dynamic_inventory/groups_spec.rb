@@ -28,7 +28,7 @@ RSpec.describe BoltDynamicInventory::Groups do
   end
 
   def saved
-    YAML.safe_load_file(path)['groups']
+    YAML.safe_load_file(path)
   end
 
   def targets(name)
@@ -37,13 +37,26 @@ RSpec.describe BoltDynamicInventory::Groups do
 
   def write_groups(list)
     FileUtils.mkdir_p(File.dirname(path))
-    File.write(path, { 'groups' => list }.to_yaml)
+    File.write(path, list.to_yaml)
   end
 
   it 'creates the file with global first, as the yaml plugin needs it to exist' do
     sync
 
     expect(saved).to eq([{ 'name' => 'global', 'targets' => all_names.sort }])
+  end
+
+  it 'writes a plain list of groups, as the yaml plugin returns the file as the group list' do
+    sync
+
+    expect(YAML.safe_load_file(path)).to be_an(Array)
+  end
+
+  it 'reads an older file with a groups: key and rewrites it as a plain list' do
+    FileUtils.mkdir_p(File.dirname(path))
+    File.write(path, { 'groups' => [{ 'name' => 'agents', 'targets' => ['a1.x.net'] }] }.to_yaml)
+
+    expect(sync.map { |g| g['name'] }).to eq(%w[global agents])
   end
 
   it 'points Bolt at the file with the yaml plugin' do

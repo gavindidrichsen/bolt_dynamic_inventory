@@ -287,7 +287,7 @@ RSpec.describe BoltDynamicInventory do
         result = inventory.generate
 
         expect(result['groups'].map { |g| g['name'] || g['_plugin'] }).to eq(%w[windows linux yaml])
-        saved = YAML.safe_load_file(File.join(groups_dir, 'groups.yaml'))['groups']
+        saved = YAML.safe_load_file(File.join(groups_dir, 'groups.yaml'))
         expect(saved.find { |g| g['name'] == 'agent' }['targets']).to eq([])
       end
     end
@@ -387,7 +387,7 @@ RSpec.describe BoltDynamicInventory do
         expect(result['groups'].map { |g| g['name'] || g['_plugin'] }).to eq(%w[windows linux yaml])
         expect(result['groups'].last['filepath']).to end_with('groups.yaml')
 
-        saved = YAML.safe_load_file(File.join(groups_dir, 'groups.yaml'))['groups']
+        saved = YAML.safe_load_file(File.join(groups_dir, 'groups.yaml'))
         agent_group = saved.find { |g| g['name'] == 'agent' }
         expect(agent_group['targets']).to contain_exactly('tender-punditry.delivery.puppetlabs.net',
                                                           'normal-meddling.delivery.puppetlabs.net')

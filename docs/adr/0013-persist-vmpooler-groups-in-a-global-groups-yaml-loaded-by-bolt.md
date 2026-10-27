@@ -32,6 +32,7 @@ groups:
 ```
 
 - `inventory.yaml` keeps only the targets and the `windows`, `linux` and `unavailable` groups.
+- The groups file is a plain YAML list of groups, because the plugin returns the file as the list of groups. An older file with a top-level `groups:` key is still read and is rewritten as a list.
 - The groups file is written before `inventory.yaml`, on every run, so it always exists and the plugin never fails on a missing file.
 - `-g` creates groups in the file and does not overwrite an existing name unless `--force`. The names `global`, `windows`, `linux` and `unavailable` are refused, as they would be duplicates.
 - `global` is rewritten on every run to list the current VMs. Other groups keep their targets; a target no longer in `global` is dropped (asking `[yN]` on a terminal, otherwise with a stderr notice). An emptied group is kept.

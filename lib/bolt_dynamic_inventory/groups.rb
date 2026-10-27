@@ -34,12 +34,15 @@ module BoltDynamicInventory
     def read
       return [] unless File.exist?(@path)
 
-      Array(YAML.safe_load_file(@path)&.fetch('groups', nil)).reject { |g| g['name'] == GLOBAL }
+      data = YAML.safe_load_file(@path)
+      # the file is a plain list for the yaml plugin; an older 'groups:' hash is still read
+      list = data.is_a?(Hash) ? data['groups'] : data
+      Array(list).reject { |g| g['name'] == GLOBAL }
     end
 
     def write(groups)
       FileUtils.mkdir_p(File.dirname(@path))
-      File.write(@path, "#{header(groups)}#{{ 'groups' => groups }.to_yaml}")
+      File.write(@path, "#{header(groups)}#{groups.to_yaml.delete_prefix("---\n")}")
     end
 
     # The comment is rebuilt from each group's pattern on every write, so it matches hand edits
