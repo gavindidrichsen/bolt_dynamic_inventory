@@ -29,6 +29,7 @@ The groups live only in `~/.config/bolt_dynamic_inventory/vmpooler/groups.yaml`;
 What to expect on each run:
 
 - `inventory.yaml` is rewritten, and `global` lists every VM, always.
+- `ungrouped` lists the VMs that are in no custom group, so new VMs stand out: pick them with `--targets ungrouped` and add them to a group. It is rebuilt on every refresh; when `global` is the only other group it holds every VM.
 - A target that no longer exists is dropped from the other groups (an emptied group is kept). On a terminal it asks first; otherwise it says what it dropped on stderr.
 - VMs in no group are listed on stderr.
 

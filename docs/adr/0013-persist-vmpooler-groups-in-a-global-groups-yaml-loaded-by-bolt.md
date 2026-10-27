@@ -36,6 +36,7 @@ groups:
 - The groups file is written before `inventory.yaml`, on every run, so it always exists and the plugin never fails on a missing file.
 - `-g` creates groups in the file and does not overwrite an existing name unless `--force`. The names `global`, `windows`, `linux` and `unavailable` are refused, as they would be duplicates.
 - `global` is rewritten on every run to list the current VMs. Other groups keep their targets; a target no longer in `global` is dropped (asking `[yN]` on a terminal, otherwise with a stderr notice). An emptied group is kept.
+- `ungrouped` is rebuilt the same way: the VMs in `global` that no custom group lists. It replaces the earlier "Not in any group" notice, and the name is reserved like `global`.
 - The file holds only valid Bolt group keys (`name`, `targets`, `facts`). A `pattern` key made Bolt warn "unexpected key(s) pattern", so the regex is not stored and the file has no header comment; `-g` uses the regex once to pick targets.
 
 ## Consequences
