@@ -141,7 +141,8 @@ RSpec.describe BoltDynamicInventory do
           'fqdn' => 'tender-punditry.delivery.puppetlabs.net',
           'state' => 'running',
           'lifetime' => 24,
-          'running' => 6.0
+          'running' => 6.0,
+          'snapshots' => %w[snapaaa snapbbb]
         },
         'normal-meddling' => {
           'template' => 'ubuntu-2004-x86_64',
@@ -329,6 +330,14 @@ RSpec.describe BoltDynamicInventory do
         tender_target = targets.find { |t| t['name'] == 'tender-punditry.delivery.puppetlabs.net' }
         expect(tender_target['vars']['type']).to eq('ubuntu-2004-x86_64')
         expect(tender_target['vars']['ttl']).to match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)
+      end
+
+      it 'lists snapshot ids in vars only for VMs that have snapshots' do
+        tender = result['targets'].find { |t| t['alias'] == 'tender-punditry' }
+        expect(tender['vars']['snapshots']).to eq(%w[snapaaa snapbbb])
+
+        onetime = result['targets'].find { |t| t['alias'] == 'onetime-algebra' }
+        expect(onetime['vars']).not_to have_key('snapshots')
       end
 
       it 'configures windows group correctly' do
