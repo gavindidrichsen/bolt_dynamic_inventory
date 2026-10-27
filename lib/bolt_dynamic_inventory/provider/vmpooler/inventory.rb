@@ -6,6 +6,7 @@ require 'open3'
 require 'set'
 require 'yaml'
 require 'bolt_dynamic_inventory/vm_cache'
+require 'bolt_dynamic_inventory/groups'
 
 module BoltDynamicInventory
   module Provider
@@ -42,7 +43,9 @@ module BoltDynamicInventory
         def initialize(config = {})
           @group_patterns = parse_group_patterns(config['group_patterns'])
           @refresh = config['refresh'] || false
+          @force = config['force'] || false
           @cache = VmCache.new(provider: 'vmpooler')
+          @groups = Groups.new(global_path: @cache.groups_path)
         end
 
         def generate
@@ -167,7 +170,8 @@ module BoltDynamicInventory
 
           groups = base_groups(windows_targets, linux_targets)
           groups << unavailable_group(unavailable_names) unless unavailable_names.empty?
-          groups.concat(regex_groups(alive_names))
+          groups.concat(@groups.sync(all_names: alive_names + unavailable_names, alive_names: alive_names,
+                                     patterns: @group_patterns, force: @force))
 
           {
             'targets' => targets,
@@ -227,17 +231,6 @@ module BoltDynamicInventory
             'facts' => { 'role' => 'unavailable' },
             'targets' => targets
           }
-        end
-
-        def regex_groups(target_names)
-          @group_patterns.map do |pattern|
-            {
-              'name' => pattern[:group],
-              # patterns match the short name so existing regexes keep working
-              'targets' => target_names.select { |n| n.split('.').first.match?(pattern[:regex]) },
-              'facts' => { 'role' => pattern[:group] }
-            }
-          end
         end
 
         def parse_group_patterns(patterns)
