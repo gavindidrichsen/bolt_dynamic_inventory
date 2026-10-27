@@ -39,6 +39,7 @@ For a complete listing of various how-to guides and design decisions, see the [d
 - [How to create and remove orbstack VMs from the command-line](howto_how_to_create_and_remove_orbstack_vms_from_the_command_line.md)
 - [How to setup windows credentials for vmpooler](howto_how_to_setup_windows_credentials_for_vmpooler.md)
 - [How to Test VMPooler Inventory Features](howto_how_to_test_vmpooler_inventory_features.md)
+- [How to keep groups in a persistent groups.yaml](docs/howto_how_to_keep_groups_in_a_persistent_groups_yaml.md)
 
 ### Design Decisions
 
@@ -55,6 +56,7 @@ For a complete listing of various how-to guides and design decisions, see the [d
 * [ADR-0010](docs/adr/0010-surface-unavailable-vms-in-a-dedicated-group-instead-of-silently-dropping.md) - Surface unavailable VMs in a dedicated group instead of silently dropping
 * [ADR-0011](docs/adr/0011-name-vmpooler-targets-by-fqdn-with-the-short-name-as-an-alias.md) - Name VMPooler targets by FQDN with the short name as an alias
 * [ADR-0012](docs/adr/0012-list-vmpooler-snapshot-ids-in-target-vars.md) - List VMPooler snapshot ids in target vars
+* [ADR-0013](docs/adr/0013-persist-vmpooler-groups-in-a-global-and-a-local-groups-yaml.md) - Persist VMPooler groups in a global and a local groups.yaml
 <!-- adrlogstop -->
 
 ### How-To Guides
@@ -62,6 +64,7 @@ For a complete listing of various how-to guides and design decisions, see the [d
 <!-- howtolog -->
 * [How to create a basic dynamic inventory plugin](docs/howto_how_to_create_a_basic_dynamic_inventory_plugin.md)
 * [How to create and remove orbstack VMs from the command-line](docs/howto_how_to_create_and_remove_orbstack_vms_from_the_command_line.md)
+* [How to keep groups in a persistent groups.yaml](docs/howto_how_to_keep_groups_in_a_persistent_groups_yaml.md)
 * [How to setup the environment](docs/howto_how_to_setup_the_environment.md)
 * [How to setup windows credentials for vmpooler](docs/howto_how_to_setup_windows_credentials_for_vmpooler.md)
 * [How to Test VMPooler Inventory Features](docs/howto_how_to_test_vmpooler_inventory_features.md)
