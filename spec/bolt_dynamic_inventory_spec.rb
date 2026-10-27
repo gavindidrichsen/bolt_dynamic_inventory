@@ -107,8 +107,15 @@ RSpec.describe BoltDynamicInventory do
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:read).and_return(nil)
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write)
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write_inventory)
+      # keep the persisted groups.yaml out of the real home and cwd
+      allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:groups_path)
+        .and_return(File.join(groups_dir, 'groups.yaml'))
+      allow(Dir).to receive(:pwd).and_return(groups_dir)
     end
 
+    after { FileUtils.remove_entry(groups_dir) }
+
+    let(:groups_dir) { Dir.mktmpdir }
     let(:mock_abs_json) do
       {
         'job-1' => {
