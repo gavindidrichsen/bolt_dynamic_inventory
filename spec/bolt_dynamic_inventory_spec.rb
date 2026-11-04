@@ -129,6 +129,7 @@ RSpec.describe BoltDynamicInventory do
     before do
       stub_const('BoltDynamicInventory::Snapshots::LEDGER', File.join(Dir.mktmpdir, 'none.json'))
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:read).and_return(nil)
+      allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:read_any).and_return(nil)
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write)
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write_inventory)
       # keep the persisted groups.yaml out of the real home
@@ -568,6 +569,48 @@ RSpec.describe BoltDynamicInventory do
         expect(result['targets'].length).to eq(1)
         expect(result['targets'].first['name']).to eq('tight-mantrap.delivery.puppetlabs.net')
         expect(result['targets'].first['vars']['type']).to eq('ubuntu-2404-x86_64')
+      end
+    end
+
+    describe 'answering from the cache' do
+      let(:cached) do
+        [{ 'hostname' => 'up.delivery.puppetlabs.net', 'type' => 'redhat-9-x86_64', 'reachable' => true },
+         { 'hostname' => 'down.delivery.puppetlabs.net', 'type' => 'redhat-9-x86_64', 'reachable' => false },
+         { 'hostname' => 'old.delivery.puppetlabs.net', 'type' => 'redhat-9-x86_64' }]
+      end
+
+      before { allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:read_any).and_return(cached) }
+
+      it 'makes no floaty or nmap call, so it answers at once' do
+        allow(Open3).to receive(:capture3)
+
+        described_class.new.generate
+
+        expect(Open3).not_to have_received(:capture3)
+      end
+
+      it 'uses the reachable flag the last refresh stored, and counts a VM without one as reachable' do
+        result = described_class.new.generate
+
+        linux = result['groups'].find { |g| g['name'] == 'linux' }['targets']
+        unavailable = result['groups'].find { |g| g['name'] == 'unavailable' }['targets']
+        expect(linux).to contain_exactly('up.delivery.puppetlabs.net', 'old.delivery.puppetlabs.net')
+        expect(unavailable).to eq(['down.delivery.puppetlabs.net'])
+      end
+
+      it 'asks floaty and nmap again, and stores the reachable flags, only with refresh' do
+        stub_abs_response(mock_abs_json)
+        stub_vmpooler_service_response(mock_vmpooler_service_json)
+        allow(Open3).to receive(:capture3).with('nmap', '-Pn', '-p', '22', *hostnames)
+                                          .and_return([mock_nmap_output_partial, '', success_status])
+        stored = nil
+        allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write) { |_cache, vms| stored = vms }
+
+        described_class.new('refresh' => true).generate
+
+        expect(stored.to_h { |vm| [vm['hostname'], vm['reachable']] })
+          .to include('onetime-algebra.delivery.puppetlabs.net' => false,
+                      'tender-punditry.delivery.puppetlabs.net' => true)
       end
     end
 
