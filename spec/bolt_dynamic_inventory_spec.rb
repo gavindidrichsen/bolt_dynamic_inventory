@@ -31,9 +31,15 @@ RSpec.describe BoltDynamicInventory do
       ]
     end
 
+    let(:config_dir) { Dir.mktmpdir }
+
     before do
       allow_any_instance_of(described_class).to receive(:fetch_orbstack_vms).and_return(mock_orbs)
+      # keep the persisted inventory.yaml and groups.yaml out of the real home
+      stub_const('BoltDynamicInventory::VmCache::BASE_DIR', config_dir)
     end
+
+    after { FileUtils.remove_entry(config_dir) }
 
     context 'basic inventory without group_patterns' do
       let(:inventory) { described_class.new }
@@ -86,18 +92,35 @@ RSpec.describe BoltDynamicInventory do
         )
       end
 
-      it 'generates inventory with regex-based groups and role facts' do
+      it 'persists regex-based groups with role facts in the orbstack groups.yaml' do
         result = inventory.generate
 
-        expect(result['groups'].length).to eq(2)
+        expect(result['groups']).to eq([{ '_plugin' => 'yaml',
+                                          'filepath' => File.join(config_dir, 'orbstack', 'groups.yaml')
+                                                            .sub(Dir.home, '~') }])
+        saved = YAML.safe_load_file(File.join(config_dir, 'orbstack', 'groups.yaml'))
 
-        agent_group = result['groups'].find { |g| g['name'] == 'agent' }
+        agent_group = saved.find { |g| g['name'] == 'agent' }
         expect(agent_group['targets']).to contain_exactly('agent01', 'agent02')
         expect(agent_group['facts']).to eq('role' => 'agent')
 
-        compiler_group = result['groups'].find { |g| g['name'] == 'compiler' }
+        compiler_group = saved.find { |g| g['name'] == 'compiler' }
         expect(compiler_group['targets']).to contain_exactly('compiler01')
         expect(compiler_group['facts']).to eq('role' => 'compiler')
+      end
+    end
+
+    context 'persisted files' do
+      let(:inventory) { described_class.new }
+
+      it 'writes inventory.yaml and a groups.yaml that always holds global and ungrouped' do
+        inventory.generate
+
+        expect(File).to exist(File.join(config_dir, 'orbstack', 'inventory.yaml'))
+        saved = YAML.safe_load_file(File.join(config_dir, 'orbstack', 'groups.yaml'))
+        expect(saved.map { |g| g['name'] }).to eq(%w[global ungrouped])
+        expect(saved.first['targets']).to eq(%w[agent01 agent02 compiler01 webserver01])
+        expect(saved.last['targets']).to eq(%w[agent01 agent02 compiler01 webserver01])
       end
     end
   end

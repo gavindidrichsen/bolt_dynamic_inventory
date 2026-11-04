@@ -2,6 +2,8 @@
 
 require 'json'
 require 'yaml'
+require 'bolt_dynamic_inventory/vm_cache'
+require 'bolt_dynamic_inventory/groups'
 
 module BoltDynamicInventory
   module Provider
@@ -9,14 +11,35 @@ module BoltDynamicInventory
       # Class for generating Bolt inventory from Orbstack VMs
       # Handles VM discovery and inventory file generation with group pattern support
       class Inventory
+        CONFIG = {
+          'transport' => 'ssh',
+          'ssh' => {
+            'native-ssh' => true,
+            'copy-command' => ['scp', '-r', '-O'],
+            'load-config' => true,
+            'login-shell' => 'bash',
+            'tty' => false,
+            'host-key-check' => false,
+            'run-as' => 'root',
+            'user' => 'root',
+            'port' => 32_222
+          }
+        }.freeze
+
         def initialize(config = {})
           @group_patterns = parse_group_patterns(config['group_patterns'])
+          @force = config['force'] || false
+          @cache = VmCache.new(provider: 'orbstack')
+          @groups = Groups.new(path: @cache.groups_path)
         end
 
-        # Generate a Bolt inventory structure from Orbstack VMs
+        # Generate a Bolt inventory structure from Orbstack VMs and persist it, as the vmpooler provider does,
+        # so `binv --path` can name a file that Bolt reads (its groups come from the provider's groups.yaml)
         def generate
           orbs = fetch_orbstack_vms
-          generate_inventory(orbs)
+          inventory_data = generate_inventory(orbs)
+          @cache.write_inventory(inventory_data)
+          inventory_data
         end
 
         # Fetch Orbstack VM details using the CLI
@@ -26,26 +49,12 @@ module BoltDynamicInventory
 
         # Generate the Bolt inventory structure
         def generate_inventory(orbs)
-          inventory = {
-            'config' => {
-              'transport' => 'ssh',
-              'ssh' => {
-                'native-ssh' => true,
-                'copy-command' => ['scp', '-r', '-O'],
-                'load-config' => true,
-                'login-shell' => 'bash',
-                'tty' => false,
-                'host-key-check' => false,
-                'run-as' => 'root',
-                'user' => 'root',
-                'port' => 32_222
-              }
-            },
-            'targets' => generate_targets(orbs)
-          }
+          inventory = { 'config' => CONFIG, 'targets' => generate_targets(orbs) }
 
-          groups = generate_groups(orbs)
-          inventory['groups'] = groups unless groups.empty?
+          # the groups file must exist before Bolt loads it, so it is written before the inventory
+          names = orbs.map { |orb| orb['name'] }.sort
+          @groups.sync(all_names: names, alive_names: names, patterns: @group_patterns, force: @force)
+          inventory['groups'] = [@groups.plugin_entry]
 
           inventory
         end
@@ -71,23 +80,6 @@ module BoltDynamicInventory
             }
           end
           targets.sort_by { |t| t['name'] }
-        end
-
-        def generate_groups(orbs)
-          return [] if @group_patterns.empty?
-
-          target_names = orbs.map { |orb| orb['name'] }.sort
-
-          @group_patterns.each_with_object([]) do |pattern, groups|
-            matching_targets = target_names.grep(pattern[:regex])
-            next if matching_targets.empty?
-
-            groups << {
-              'name' => pattern[:group],
-              'facts' => { 'role' => pattern[:group] },
-              'targets' => matching_targets
-            }
-          end
         end
       end
     end
