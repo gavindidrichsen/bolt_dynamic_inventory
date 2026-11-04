@@ -20,6 +20,8 @@ This `bolt_dynamic_inventory` gem queries either VMPooler or Orbstack and genera
 - **as a gem**. For more information see [How to use as a gem](./docs/how_to/how_to_use_as_a_gem.md).
 - **as a bolt dynamic inventory plugin**. For more information see [How to use as a bolt dynamic plugin](./docs/how_to/how_to_use_as_a_bolt_dynamic_plugin.md).
 
+To get a file instead of YAML on standard output, use `--path`: `binv --path`, `binv --provider=orbstack --path` or `binvv --path` generate the inventory and print only the path of that provider's `inventory.yaml` (with its `groups.yaml` beside it), for example `bolt inventory show --targets global --inventoryfile "$(binvv --path)"`. See [ADR 14](./docs/adr/0014-print-the-inventory-file-name-with-path-and-persist-the-orbstack-inventory-too.md).
+
 This repository also explains [How to create a basic dynamic inventory plugin](./docs/how_to/how_to_create_a_basic_bolt_inventory_plugin.md).
 
 ## References

@@ -26,6 +26,8 @@ bolt inventory show --targets 2agents
 
 The groups live only in `~/.config/bolt_dynamic_inventory/vmpooler/groups.yaml`; `inventory.yaml` loads that file with Bolt's `yaml` plugin, so the same groups work from any project. To change a group by hand, edit its `targets` there; `binvv --refresh` keeps `global` current and drops VMs that no longer exist.
 
+The OrbStack provider works the same way, with its own files under `~/.config/bolt_dynamic_inventory/orbstack/` (`binv -g "name:regex"`). To pass the inventory to another tool as a file, use `--path`: `--inventoryfile="$(binvv --path)"` (or `$(binv --path)` for OrbStack); it prints only the path of the provider's `inventory.yaml`, which can be read as many times as needed, unlike `<(binvv)`.
+
 What to expect on each run:
 
 - `inventory.yaml` is rewritten, and `global` lists every VM, always.
