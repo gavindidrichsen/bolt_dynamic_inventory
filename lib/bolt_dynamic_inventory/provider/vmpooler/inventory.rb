@@ -7,6 +7,7 @@ require 'set'
 require 'yaml'
 require 'bolt_dynamic_inventory/vm_cache'
 require 'bolt_dynamic_inventory/groups'
+require 'bolt_dynamic_inventory/snapshots'
 
 module BoltDynamicInventory
   module Provider
@@ -46,6 +47,7 @@ module BoltDynamicInventory
           @force = config['force'] || false
           @cache = VmCache.new(provider: 'vmpooler')
           @groups = Groups.new(path: @cache.groups_path)
+          @snapshots = Snapshots.new
         end
 
         def generate
@@ -58,13 +60,12 @@ module BoltDynamicInventory
 
         private
 
+        # Only --refresh (or no cache yet) asks floaty for the VMs and checks them; every other run reads the cache
         def load_vms
-          unless @refresh
-            cached = @cache.read
-            return cached if cached && !@cache.any_vm_expired?(cached)
-          end
+          cached = @refresh ? nil : @cache.read_any
+          return cached if cached
 
-          vms = fetch_vmpooler_vms
+          vms = mark_reachable(fetch_vmpooler_vms)
           @cache.write(vms)
           vms
         end
@@ -75,8 +76,9 @@ module BoltDynamicInventory
           raise error_msg
         end
 
-        def partition_by_availability(vms)
-          return [[], []] if vms.empty?
+        # Reachable on port 22 or not, recorded in the cache so later runs need no network
+        def mark_reachable(vms)
+          return vms if vms.empty?
 
           hostnames = vms.map { |item| item['hostname'] }
           stdout, stderr, status = Open3.capture3('nmap', '-Pn', '-p', '22', *hostnames)
@@ -87,9 +89,12 @@ module BoltDynamicInventory
                                    .grep(/^Nmap scan report for/)
                                    .to_set { |line| line.match(/^Nmap scan report for (\S+)/)[1] }
 
-          alive = vms.select { |vm| active_hostnames.include?(vm['hostname']) }
-          unavailable = vms.reject { |vm| active_hostnames.include?(vm['hostname']) }
-          [alive, unavailable]
+          vms.each { |vm| vm['reachable'] = active_hostnames.include?(vm['hostname']) }
+        end
+
+        # A cache from before 'reachable' was stored counts every VM as reachable
+        def partition_by_availability(vms)
+          vms.partition { |vm| vm.fetch('reachable', true) }
         end
 
         # Fetch VMPooler VM details from both ABS and vmpooler services
@@ -183,9 +188,8 @@ module BoltDynamicInventory
 
         def extract_targets(vms)
           targets = vms.map do |vm|
-            vars = { 'type' => vm['type'] }
-            vars['ttl'] = vm['ttl'] if vm['ttl']
-            vars['snapshots'] = vm['snapshots'] if vm['snapshots']
+            vars = { 'type' => vm['type'], 'ttl' => vm['ttl'] }.compact
+            vars['snapshots'] = @snapshots.annotate(vm['hostname'], vm['snapshots']) if vm['snapshots']
             {
               'name' => vm['hostname'],
               'alias' => vm['hostname'].split('.').first,

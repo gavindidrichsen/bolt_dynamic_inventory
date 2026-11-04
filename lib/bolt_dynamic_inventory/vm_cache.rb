@@ -28,6 +28,18 @@ module BoltDynamicInventory
       nil
     end
 
+    # The cached VMs whatever their age, or nil when there is no cache. A stale cache is still used so a plain
+    # binv answers at once; it says so on stderr and the user runs --refresh to look at the real VMs again.
+    def read_any
+      return nil unless File.exist?(cache_path)
+
+      data = JSON.parse(File.read(cache_path))
+      warn "VM cache expired #{data['expires_at']}; run binv --refresh to update it" if stale?
+      data['vms']
+    rescue JSON::ParserError, TypeError
+      nil
+    end
+
     def write(vms)
       FileUtils.mkdir_p(@provider_dir)
       now = Time.now

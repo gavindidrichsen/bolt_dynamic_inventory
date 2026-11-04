@@ -31,9 +31,15 @@ RSpec.describe BoltDynamicInventory do
       ]
     end
 
+    let(:config_dir) { Dir.mktmpdir }
+
     before do
       allow_any_instance_of(described_class).to receive(:fetch_orbstack_vms).and_return(mock_orbs)
+      # keep the persisted inventory.yaml and groups.yaml out of the real home
+      stub_const('BoltDynamicInventory::VmCache::BASE_DIR', config_dir)
     end
+
+    after { FileUtils.remove_entry(config_dir) }
 
     context 'basic inventory without group_patterns' do
       let(:inventory) { described_class.new }
@@ -86,25 +92,44 @@ RSpec.describe BoltDynamicInventory do
         )
       end
 
-      it 'generates inventory with regex-based groups and role facts' do
+      it 'persists regex-based groups with role facts in the orbstack groups.yaml' do
         result = inventory.generate
 
-        expect(result['groups'].length).to eq(2)
+        expect(result['groups']).to eq([{ '_plugin' => 'yaml',
+                                          'filepath' => File.join(config_dir, 'orbstack', 'groups.yaml')
+                                                            .sub(Dir.home, '~') }])
+        saved = YAML.safe_load_file(File.join(config_dir, 'orbstack', 'groups.yaml'))
 
-        agent_group = result['groups'].find { |g| g['name'] == 'agent' }
+        agent_group = saved.find { |g| g['name'] == 'agent' }
         expect(agent_group['targets']).to contain_exactly('agent01', 'agent02')
         expect(agent_group['facts']).to eq('role' => 'agent')
 
-        compiler_group = result['groups'].find { |g| g['name'] == 'compiler' }
+        compiler_group = saved.find { |g| g['name'] == 'compiler' }
         expect(compiler_group['targets']).to contain_exactly('compiler01')
         expect(compiler_group['facts']).to eq('role' => 'compiler')
+      end
+    end
+
+    context 'persisted files' do
+      let(:inventory) { described_class.new }
+
+      it 'writes inventory.yaml and a groups.yaml that always holds global and ungrouped' do
+        inventory.generate
+
+        expect(File).to exist(File.join(config_dir, 'orbstack', 'inventory.yaml'))
+        saved = YAML.safe_load_file(File.join(config_dir, 'orbstack', 'groups.yaml'))
+        expect(saved.map { |g| g['name'] }).to eq(%w[global ungrouped])
+        expect(saved.first['targets']).to eq(%w[agent01 agent02 compiler01 webserver01])
+        expect(saved.last['targets']).to eq(%w[agent01 agent02 compiler01 webserver01])
       end
     end
   end
 
   describe BoltDynamicInventory::Provider::Vmpooler::Inventory do
     before do
+      stub_const('BoltDynamicInventory::Snapshots::LEDGER', File.join(Dir.mktmpdir, 'none.json'))
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:read).and_return(nil)
+      allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:read_any).and_return(nil)
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write)
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write_inventory)
       # keep the persisted groups.yaml out of the real home
@@ -340,7 +365,8 @@ RSpec.describe BoltDynamicInventory do
 
       it 'lists snapshot ids in vars only for VMs that have snapshots' do
         tender = result['targets'].find { |t| t['alias'] == 'tender-punditry' }
-        expect(tender['vars']['snapshots']).to eq(%w[snapaaa snapbbb])
+        # no floaty ledger in the test home, so every id is dated unknown
+        expect(tender['vars']['snapshots']).to eq(%w[snapaaa:unknown snapbbb:unknown])
 
         onetime = result['targets'].find { |t| t['alias'] == 'onetime-algebra' }
         expect(onetime['vars']).not_to have_key('snapshots')
@@ -543,6 +569,48 @@ RSpec.describe BoltDynamicInventory do
         expect(result['targets'].length).to eq(1)
         expect(result['targets'].first['name']).to eq('tight-mantrap.delivery.puppetlabs.net')
         expect(result['targets'].first['vars']['type']).to eq('ubuntu-2404-x86_64')
+      end
+    end
+
+    describe 'answering from the cache' do
+      let(:cached) do
+        [{ 'hostname' => 'up.delivery.puppetlabs.net', 'type' => 'redhat-9-x86_64', 'reachable' => true },
+         { 'hostname' => 'down.delivery.puppetlabs.net', 'type' => 'redhat-9-x86_64', 'reachable' => false },
+         { 'hostname' => 'old.delivery.puppetlabs.net', 'type' => 'redhat-9-x86_64' }]
+      end
+
+      before { allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:read_any).and_return(cached) }
+
+      it 'makes no floaty or nmap call, so it answers at once' do
+        allow(Open3).to receive(:capture3)
+
+        described_class.new.generate
+
+        expect(Open3).not_to have_received(:capture3)
+      end
+
+      it 'uses the reachable flag the last refresh stored, and counts a VM without one as reachable' do
+        result = described_class.new.generate
+
+        linux = result['groups'].find { |g| g['name'] == 'linux' }['targets']
+        unavailable = result['groups'].find { |g| g['name'] == 'unavailable' }['targets']
+        expect(linux).to contain_exactly('up.delivery.puppetlabs.net', 'old.delivery.puppetlabs.net')
+        expect(unavailable).to eq(['down.delivery.puppetlabs.net'])
+      end
+
+      it 'asks floaty and nmap again, and stores the reachable flags, only with refresh' do
+        stub_abs_response(mock_abs_json)
+        stub_vmpooler_service_response(mock_vmpooler_service_json)
+        allow(Open3).to receive(:capture3).with('nmap', '-Pn', '-p', '22', *hostnames)
+                                          .and_return([mock_nmap_output_partial, '', success_status])
+        stored = nil
+        allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write) { |_cache, vms| stored = vms }
+
+        described_class.new('refresh' => true).generate
+
+        expect(stored.to_h { |vm| [vm['hostname'], vm['reachable']] })
+          .to include('onetime-algebra.delivery.puppetlabs.net' => false,
+                      'tender-punditry.delivery.puppetlabs.net' => true)
       end
     end
 

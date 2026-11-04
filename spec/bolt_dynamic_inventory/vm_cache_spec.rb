@@ -17,6 +17,28 @@ RSpec.describe BoltDynamicInventory::VmCache do
     FileUtils.remove_entry(tmpdir)
   end
 
+  describe '#read_any' do
+    it 'returns nil when there is no cache' do
+      expect(cache.read_any).to be_nil
+    end
+
+    it 'returns the VMs of a fresh cache without a warning' do
+      cache.write([{ 'hostname' => 'a.example.com', 'type' => 'ubuntu' }])
+
+      expect { expect(cache.read_any.first['hostname']).to eq('a.example.com') }.not_to output.to_stderr
+    end
+
+    it 'still returns the VMs of an expired cache, and says to run --refresh' do
+      cache.write([{ 'hostname' => 'a.example.com', 'type' => 'ubuntu' }])
+      path = File.join(tmpdir, 'test', 'cache.json')
+      data = JSON.parse(File.read(path)).merge('expires_at' => (Time.now - 60).iso8601)
+      File.write(path, JSON.generate(data))
+
+      expect { expect(cache.read_any.first['hostname']).to eq('a.example.com') }
+        .to output(/run binv --refresh/).to_stderr
+    end
+  end
+
   describe '#write' do
     it 'includes an expires_at field in the cache file' do
       cache.write([{ 'hostname' => 'a.example.com', 'type' => 'ubuntu' }])
