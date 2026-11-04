@@ -127,6 +127,7 @@ RSpec.describe BoltDynamicInventory do
 
   describe BoltDynamicInventory::Provider::Vmpooler::Inventory do
     before do
+      stub_const('BoltDynamicInventory::Snapshots::LEDGER', File.join(Dir.mktmpdir, 'none.json'))
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:read).and_return(nil)
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write)
       allow_any_instance_of(BoltDynamicInventory::VmCache).to receive(:write_inventory)
@@ -363,7 +364,8 @@ RSpec.describe BoltDynamicInventory do
 
       it 'lists snapshot ids in vars only for VMs that have snapshots' do
         tender = result['targets'].find { |t| t['alias'] == 'tender-punditry' }
-        expect(tender['vars']['snapshots']).to eq(%w[snapaaa snapbbb])
+        # no floaty ledger in the test home, so every id is dated unknown
+        expect(tender['vars']['snapshots']).to eq(%w[snapaaa:unknown snapbbb:unknown])
 
         onetime = result['targets'].find { |t| t['alias'] == 'onetime-algebra' }
         expect(onetime['vars']).not_to have_key('snapshots')

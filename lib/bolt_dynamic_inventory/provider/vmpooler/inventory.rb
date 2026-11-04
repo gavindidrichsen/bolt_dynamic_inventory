@@ -7,6 +7,7 @@ require 'set'
 require 'yaml'
 require 'bolt_dynamic_inventory/vm_cache'
 require 'bolt_dynamic_inventory/groups'
+require 'bolt_dynamic_inventory/snapshots'
 
 module BoltDynamicInventory
   module Provider
@@ -46,6 +47,7 @@ module BoltDynamicInventory
           @force = config['force'] || false
           @cache = VmCache.new(provider: 'vmpooler')
           @groups = Groups.new(path: @cache.groups_path)
+          @snapshots = Snapshots.new
         end
 
         def generate
@@ -183,9 +185,8 @@ module BoltDynamicInventory
 
         def extract_targets(vms)
           targets = vms.map do |vm|
-            vars = { 'type' => vm['type'] }
-            vars['ttl'] = vm['ttl'] if vm['ttl']
-            vars['snapshots'] = vm['snapshots'] if vm['snapshots']
+            vars = { 'type' => vm['type'], 'ttl' => vm['ttl'] }.compact
+            vars['snapshots'] = @snapshots.annotate(vm['hostname'], vm['snapshots']) if vm['snapshots']
             {
               'name' => vm['hostname'],
               'alias' => vm['hostname'].split('.').first,
