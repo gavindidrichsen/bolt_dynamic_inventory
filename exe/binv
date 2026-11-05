@@ -5,7 +5,7 @@ require 'bolt_dynamic_inventory'
 require 'yaml'
 require 'optparse'
 
-options = { group_patterns: [], provider: 'orbstack', refresh: false, force: false, stdout: false }
+options = { group_patterns: [], provider: 'orbstack', refresh: false, force: false, stdout: false, verbose: false }
 
 # Parse command line options
 OptionParser.new do |opts|
@@ -36,6 +36,10 @@ OptionParser.new do |opts|
     options[:stdout] = true
   end
 
+  opts.on('--verbose', 'Also report on stderr where the inventory was written') do
+    options[:verbose] = true
+  end
+
   opts.on('-v', '--version', 'Show version information') do
     puts "binv #{BoltDynamicInventory::VERSION}"
     exit
@@ -59,9 +63,9 @@ if inventory_data['groups']&.any? { |g| g['name'] == 'unavailable' && !g['target
   warn "\e[33mWarning: #{count} unavailable VM#{suffix} moved to the 'unavailable' group — check connectivity\e[0m"
 end
 
-# Both providers persist their inventory; report where on stderr, and print only the path on stdout unless --stdout
+# Both providers persist their inventory; print only the path on stdout unless --stdout, and where it was written on stderr only with --verbose
 cache = BoltDynamicInventory::VmCache.new(provider: options[:provider])
-warn "Inventory written to #{cache.inventory_path}"
+warn "Inventory written to #{cache.inventory_path}" if options[:verbose]
 
 if options[:stdout]
   puts inventory_data.to_yaml
