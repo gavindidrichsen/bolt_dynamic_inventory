@@ -19,7 +19,7 @@ An earlier version of this change added `--path` and kept the YAML as the defaul
 
 ## Decision
 
-Therefore, I decided that `binv`, `binv --provider=orbstack` and `binvv` generate the inventory as usual and then print only the path of the provider's `inventory.yaml` on standard output (the "Inventory written to" line stays on standard error), so `--inventoryfile="$(binvv)"` gives a regular file that can be read any number of times. `--stdout` prints the inventory YAML instead, for quick troubleshooting. `--path` does not exist.
+Therefore, I decided that `binv`, `binv --provider=orbstack` and `binvv` generate the inventory as usual and then print only the path of the provider's `inventory.yaml` on standard output (the "Inventory written to" line goes to standard error only with `--verbose`; before 2026-11-05 it was always printed), so `--inventoryfile="$(binvv)"` gives a regular file that can be read any number of times. `--stdout` prints the inventory YAML instead, for quick troubleshooting. `--path` does not exist.
 
 To make that true for OrbStack too, the OrbStack provider now persists `~/.config/bolt_dynamic_inventory/orbstack/inventory.yaml` and a `groups.yaml` beside it, built by the same `Groups` class as vmpooler, so `global` and `ungrouped` are always present and `-g` groups persist. OrbStack groups now come from `groups.yaml` through the yaml plugin instead of being embedded.
 
