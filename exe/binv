@@ -7,16 +7,19 @@ require 'optparse'
 
 options = { group_patterns: [], provider: 'orbstack', refresh: false, force: false, stdout: false, verbose: false }
 
+# Split 'name:regex' into the group hash binv expects
+def parse_group_pattern(pattern)
+  group, regex = pattern.split(':', 2)
+  { 'group' => group, 'regex' => regex }
+end
+
 # Parse command line options
 OptionParser.new do |opts|
   opts.banner = 'Usage: binv [options]'
 
   opts.on('-g', '--groups "NAME:REGEX,NAME2:REGEX2"', Array,
           'Group patterns (format: groupname:regex, comma-separated)') do |patterns|
-    options[:group_patterns] = patterns.map do |pattern|
-      group, regex = pattern.split(':', 2)
-      { 'group' => group, 'regex' => regex }
-    end
+    options[:group_patterns] = patterns.map { |pattern| parse_group_pattern(pattern) }
   end
 
   opts.on('-f', '--force', 'Replace an existing global group of the same name when using -g') do
@@ -63,7 +66,7 @@ if inventory_data['groups']&.any? { |g| g['name'] == 'unavailable' && !g['target
   warn "\e[33mWarning: #{count} unavailable VM#{suffix} moved to the 'unavailable' group — check connectivity\e[0m"
 end
 
-# Both providers persist their inventory; print only the path on stdout unless --stdout, and where it was written on stderr only with --verbose
+# Both providers persist their inventory; print its path on stdout, and where it was written on stderr with --verbose
 cache = BoltDynamicInventory::VmCache.new(provider: options[:provider])
 warn "Inventory written to #{cache.inventory_path}" if options[:verbose]
 
